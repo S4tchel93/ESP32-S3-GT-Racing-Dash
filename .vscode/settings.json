@@ -25,6 +25,8 @@
     "tuple": "c",
     "type_traits": "c",
     "utility": "c",
-    "variant": "c"
+    "variant": "c",
+    "ui_helpers.h": "c",
+    "ui_screen1.h": "c"
   }
 }

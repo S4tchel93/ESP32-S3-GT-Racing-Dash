@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "rgb_panel",
-    "project_version":    "1",
+    "project_version":    "717a98a-dirty",
     "project_path":       "H:/development/rgb_panel",
     "idf_path":           "C:/Users/Diego/esp/v5.5/esp-idf",
     "build_dir":          "H:/development/rgb_panel",
@@ -775,8 +775,8 @@
             "managed_reqs": [],
             "managed_priv_reqs": [ "espressif__esp_lcd_touch", "espressif__esp_lcd_touch_gt911", "lvgl__lvgl" ],
             "file": "H:/development/rgb_panel/esp-idf/main/libmain.a",
-            "sources": [ "H:/development/rgb_panel/main/st7262_display_driver.c", "H:/development/rgb_panel/main/main.c", "H:/development/rgb_panel/main/rgb_lcd_example_main.c", "H:/development/rgb_panel/main/lvgl_demo_ui.c" ],
-            "include_dirs": [ "." ]
+            "sources": [ "H:/development/rgb_panel/main/main.c", "H:/development/rgb_panel/main/ui/ui.c", "H:/development/rgb_panel/main/ui/ui_helpers.c", "H:/development/rgb_panel/main/ui/screens/ui_Screen1.c", "H:/development/rgb_panel/main/ui/images/ui_img_lovely_dash_png.c" ],
+            "include_dirs": [ ".", "ui" ]
         },
         "mbedtls": {
             "alias": "idf::mbedtls",
@@ -2206,7 +2206,7 @@
             "priv_reqs": [ "esp_lcd", "espressif__esp_lcd_touch", "espressif__esp_lcd_touch_gt911", "lvgl__lvgl" ],
             "managed_reqs": [],
             "managed_priv_reqs": [ "espressif__esp_lcd_touch", "espressif__esp_lcd_touch_gt911", "lvgl__lvgl" ],
-            "include_dirs": [ "." ]
+            "include_dirs": [ ".", "ui" ]
         },
         "espressif__esp_lcd_touch": {
             "alias": "idf::espressif__esp_lcd_touch",

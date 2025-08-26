@@ -20,6 +20,7 @@
 #include "esp_log.h"
 #include "lvgl.h"
 #include "driver/i2c.h"
+#include "ui.h"
 static const char *TAG = "example";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -464,6 +465,7 @@ void app_main(void)
     ESP_LOGI(TAG, "Display LVGL UI");
     // Lock the mutex due to the LVGL APIs are not thread-safe
     _lock_acquire(&lvgl_api_lock);
-    lv_example_get_started_4();
+    //lv_example_get_started_4();
+    ui_init();
     _lock_release(&lvgl_api_lock);
 }
