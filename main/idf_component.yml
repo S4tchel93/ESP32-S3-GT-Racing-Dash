@@ -1,0 +1,4 @@
+dependencies:
+  lvgl/lvgl: 9.2.0
+  espressif/esp_lcd_touch: ^1.1.2
+  esp_lcd_touch_gt911: "^1"

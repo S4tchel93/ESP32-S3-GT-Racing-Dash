@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+H:/development/rgb_panel/CMakeFiles/bootloader
+H:/development/rgb_panel/CMakeFiles/bootloader.rule
+H:/development/rgb_panel/CMakeFiles/bootloader-complete.rule
+H:/development/rgb_panel/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+H:/development/rgb_panel/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+H:/development/rgb_panel/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+H:/development/rgb_panel/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+H:/development/rgb_panel/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+H:/development/rgb_panel/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+H:/development/rgb_panel/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule

@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "H:/development/rgb_panel/CMakeFiles/bootloader"
+		},
+		{
+			"file" : "H:/development/rgb_panel/CMakeFiles/bootloader.rule"
+		},
+		{
+			"file" : "H:/development/rgb_panel/CMakeFiles/bootloader-complete.rule"
+		},
+		{
+			"file" : "H:/development/rgb_panel/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule"
+		},
+		{
+			"file" : "H:/development/rgb_panel/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule"
+		},
+		{
+			"file" : "H:/development/rgb_panel/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule"
+		},
+		{
+			"file" : "H:/development/rgb_panel/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule"
+		},
+		{
+			"file" : "H:/development/rgb_panel/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule"
+		},
+		{
+			"file" : "H:/development/rgb_panel/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule"
+		},
+		{
+			"file" : "H:/development/rgb_panel/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"bootloader"
+		],
+		"name" : "bootloader"
+	}
+}

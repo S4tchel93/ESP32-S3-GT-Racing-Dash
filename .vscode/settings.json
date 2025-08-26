@@ -1,0 +1,30 @@
+{
+  "C_Cpp.intelliSenseEngine": "default",
+  "idf.espIdfPathWin": "C:\\Users\\Diego\\esp\\v5.5\\esp-idf",
+  "idf.toolsPathWin": "C:\\Users\\Diego\\.espressif",
+  "idf.pythonInstallPath": "C:\\Users\\Diego\\.espressif\\tools\\idf-python\\3.11.2\\python.exe",
+  "idf.openOcdConfigs": [
+    "board/esp32s3-builtin.cfg"
+  ],
+  "idf.flashType": "UART",
+  "idf.portWin": "COM8",
+  "files.associations": {
+    "lv_conf_internal.h": "c",
+    "esp_lcd_panel_ops.h": "c",
+    "esp_lcd_panel_rgb.h": "c",
+    "st7262_display_driver.h": "c",
+    "gpio.h": "c",
+    "uart_share_hw_ctrl.h": "c",
+    "esp_err.h": "c",
+    "complex": "c",
+    "array": "c",
+    "charconv": "c",
+    "compare": "c",
+    "functional": "c",
+    "ratio": "c",
+    "tuple": "c",
+    "type_traits": "c",
+    "utility": "c",
+    "variant": "c"
+  }
+}
