@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "rgb_panel",
-    "project_version":    "a268afa-dirty",
+    "project_version":    "f0a43d2-dirty",
     "project_path":       "H:/development/rgb_panel",
     "idf_path":           "C:/Users/Diego/esp/v5.5/esp-idf",
     "build_dir":          "H:/development/rgb_panel",
@@ -775,7 +775,7 @@
             "managed_reqs": [],
             "managed_priv_reqs": [ "espressif__esp_lcd_touch", "espressif__esp_lcd_touch_gt911", "lvgl__lvgl" ],
             "file": "H:/development/rgb_panel/esp-idf/main/libmain.a",
-            "sources": [ "H:/development/rgb_panel/main/main.c", "H:/development/rgb_panel/main/ui.c", "H:/development/rgb_panel/main/styles.c", "H:/development/rgb_panel/main/screens.c", "H:/development/rgb_panel/main/images.c", "H:/development/rgb_panel/main/ui_font_zen_dots120.c" ],
+            "sources": [ "H:/development/rgb_panel/main/ui_image_wiper_64.c", "H:/development/rgb_panel/main/ui_image_engine_64.c", "H:/development/rgb_panel/main/main.c", "H:/development/rgb_panel/main/ui.c", "H:/development/rgb_panel/main/styles.c", "H:/development/rgb_panel/main/screens.c", "H:/development/rgb_panel/main/images.c", "H:/development/rgb_panel/main/ui_font_zen_dots120.c" ],
             "include_dirs": [ "." ]
         },
         "mbedtls": {

@@ -93,6 +93,9 @@ typedef struct _objects_t {
     lv_obj_t *sector_2;
     lv_obj_t *sector_3;
     lv_obj_t *lap_delta_value;
+    lv_obj_t *ignition_status;
+    lv_obj_t *wipers_status;
+    lv_obj_t *lights_status;
 } objects_t;
 
 extern objects_t objects;

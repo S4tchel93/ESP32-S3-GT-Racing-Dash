@@ -939,6 +939,39 @@ void create_screen_main() {
             lv_obj_set_style_bg_opa(obj, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "+3.546");
         }
+        {
+            // Ignition Status
+            lv_obj_t *obj = lv_obj_create(parent_obj);
+            objects.ignition_status = obj;
+            lv_obj_set_pos(obj, 229, 67);
+            lv_obj_set_size(obj, 66, 41);
+            lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+            lv_obj_set_style_border_opa(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0xff2a2a2a), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_image_src(obj, &img_engine_64, LV_PART_MAIN | LV_STATE_DEFAULT);
+        }
+        {
+            // Wipers Status
+            lv_obj_t *obj = lv_obj_create(parent_obj);
+            objects.wipers_status = obj;
+            lv_obj_set_pos(obj, 154, 67);
+            lv_obj_set_size(obj, 66, 41);
+            lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+            lv_obj_set_style_border_opa(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0xff2a2a2a), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_image_src(obj, &img_wiper_64, LV_PART_MAIN | LV_STATE_DEFAULT);
+        }
+        {
+            // Lights Status
+            lv_obj_t *obj = lv_obj_create(parent_obj);
+            objects.lights_status = obj;
+            lv_obj_set_pos(obj, 78, 67);
+            lv_obj_set_size(obj, 66, 41);
+            lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+            lv_obj_set_style_border_opa(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0xff2a2a2a), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_image_src(obj, &img_light_64, LV_PART_MAIN | LV_STATE_DEFAULT);
+        }
     }
     
     tick_screen_main();
@@ -1031,6 +1064,9 @@ void delete_screen_main() {
     objects.sector_2 = 0;
     objects.sector_3 = 0;
     objects.lap_delta_value = 0;
+    objects.ignition_status = 0;
+    objects.wipers_status = 0;
+    objects.lights_status = 0;
 }
 
 void tick_screen_main() {
