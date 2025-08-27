@@ -21,6 +21,8 @@
 #include "lvgl.h"
 #include "driver/i2c.h"
 #include "ui.h"
+#include "screens.h"
+#include "actions.h"
 static const char *TAG = "example";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -274,29 +276,95 @@ static void touchpad_read(lv_indev_t *indev_drv, lv_indev_data_t *data)
         data->state = LV_INDEV_STATE_RELEASED; // Set state to released
     }
 }
-static lv_obj_t * label;
-static void slider_event_cb(lv_event_t * e)
+
+/*Changing the speed based on Green slider*/
+void action_speed_change(lv_event_t * e)
 {
     lv_obj_t * slider = lv_event_get_target_obj(e);
     /*Refresh the text*/
-    lv_label_set_text_fmt(label, "%" LV_PRId32, lv_slider_get_value(slider));
-    lv_obj_align_to(label, slider, LV_ALIGN_OUT_TOP_MID, 0, -15);    /*Align top of the slider*/
+    lv_label_set_text_fmt(objects.speed_value, "%" LV_PRId32, lv_slider_get_value(slider));
 }
-/**
- * Create a slider and write its value on a label.
- */
-void lv_example_get_started_4(void)
-{
-    /*Create a slider in the center of the display*/
-    lv_obj_t * slider = lv_slider_create(lv_screen_active());
-    lv_obj_set_width(slider, 200);                          /*Set the width*/
-    lv_obj_center(slider);                                  /*Align to the center of the parent (screen)*/
-    lv_obj_add_event_cb(slider, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);     /*Assign an event function*/
 
-    /*Create a label above the slider*/
-    label = lv_label_create(lv_screen_active());
-    lv_label_set_text(label, "0");
-    lv_obj_align_to(label, slider, LV_ALIGN_OUT_TOP_MID, 0, -15);    /*Align top of the slider*/
+void action_map_change(lv_event_t * e)
+{
+    char* map_value = lv_label_get_text(objects.map_value);
+
+    uint32_t map_value_int = atoi(map_value);
+    map_value_int++;
+    if (map_value_int == 10){
+        map_value_int = 1;
+    }
+
+    /*Refresh the text*/
+    lv_label_set_text_fmt(objects.map_value, "%" LV_PRId32, map_value_int);
+}
+
+void action_tc_change (lv_event_t * e)
+{
+    char* tc_value = lv_label_get_text(objects.tc_value);
+
+    uint32_t tc_value_int = atoi(tc_value);
+    tc_value_int++;
+    if (tc_value_int == 10){
+        tc_value_int = 1;
+    }
+
+    /*Refresh the text*/
+    lv_label_set_text_fmt(objects.tc_value, "%" LV_PRId32, tc_value_int);
+}
+
+void action_abs_change (lv_event_t * e)
+{
+    char* abs_value = lv_label_get_text(objects.abs_value);
+
+    uint32_t abs_value_int = atoi(abs_value);
+    abs_value_int++;
+    if (abs_value_int == 10){
+        abs_value_int = 1;
+    }
+
+    /*Refresh the text*/
+    lv_label_set_text_fmt(objects.abs_value, "%" LV_PRId32, abs_value_int);
+}
+
+void action_rpm_change(lv_event_t * e)
+{
+    char* gear_value = lv_label_get_text(objects.gear_value);
+    uint32_t gear_value_int = atoi(gear_value);
+    bool is_text = false;
+
+    if(strcmp(gear_value, "N") == 0)
+    {
+        gear_value_int = 1;
+    }
+    else if(gear_value_int >= 1 && gear_value_int < 8)
+    {
+        gear_value_int++;
+    }
+    else if (gear_value_int == 8)
+    {
+        gear_value = "R";
+        is_text = true;
+    }
+    else if (strcmp(gear_value, "R") == 0)
+    {
+        gear_value = "N";
+        is_text = true;
+    }
+    else
+    {
+        gear_value = "N";
+        is_text = true;
+    }
+
+    if(is_text == false)
+    {
+        lv_label_set_text_fmt(objects.gear_value, "%" LV_PRId32, gear_value_int);
+    }
+    else
+    {
+        lv_label_set_text(objects.gear_value, gear_value);
+    }
 }
 
 void app_main(void)
@@ -465,7 +533,6 @@ void app_main(void)
     ESP_LOGI(TAG, "Display LVGL UI");
     // Lock the mutex due to the LVGL APIs are not thread-safe
     _lock_acquire(&lvgl_api_lock);
-    //lv_example_get_started_4();
     ui_init();
     _lock_release(&lvgl_api_lock);
 }
