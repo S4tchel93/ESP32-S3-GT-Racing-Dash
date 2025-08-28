@@ -15,88 +15,13 @@
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_rgb.h"
 #include "esp_lcd_touch_gt911.h"
-#include "driver/gpio.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "lvgl.h"
-#include "driver/i2c.h"
 #include "ui.h"
-#include "screens.h"
-#include "actions.h"
+#include "st7262_lcd.h"
+#include "gt911_touch.h"
 static const char *TAG = "example";
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Refresh Rate = 18000000/(1+40+20+800)/(1+10+5+480) = 42Hz
-#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (16 * 1000 * 1000)
-#define EXAMPLE_LCD_H_RES              800
-#define EXAMPLE_LCD_V_RES              480
-#define EXAMPLE_LCD_HSYNC              1
-#define EXAMPLE_LCD_HBP                40
-#define EXAMPLE_LCD_HFP                20
-#define EXAMPLE_LCD_VSYNC              1
-#define EXAMPLE_LCD_VBP                10
-#define EXAMPLE_LCD_VFP                5
-
-#define EXAMPLE_LCD_BK_LIGHT_ON_LEVEL  1
-#define EXAMPLE_LCD_BK_LIGHT_OFF_LEVEL !EXAMPLE_LCD_BK_LIGHT_ON_LEVEL
-#define EXAMPLE_PIN_NUM_BK_LIGHT       -1
-#define EXAMPLE_PIN_NUM_DISP_EN        -1
-
-#define EXAMPLE_LCD_IO_RGB_VSYNC        (GPIO_NUM_3)
-#define EXAMPLE_LCD_IO_RGB_HSYNC        (GPIO_NUM_46)
-#define EXAMPLE_LCD_IO_RGB_DE           (GPIO_NUM_5)
-#define EXAMPLE_LCD_IO_RGB_PCLK         (GPIO_NUM_7)
-
-#define EXAMPLE_PIN_NUM_HSYNC          EXAMPLE_LCD_IO_RGB_HSYNC
-#define EXAMPLE_PIN_NUM_VSYNC          EXAMPLE_LCD_IO_RGB_VSYNC
-#define EXAMPLE_PIN_NUM_DE             EXAMPLE_LCD_IO_RGB_DE
-#define EXAMPLE_PIN_NUM_PCLK           EXAMPLE_LCD_IO_RGB_PCLK
-
-#define EXAMPLE_LCD_DATA0_GPIO        (GPIO_NUM_14)
-#define EXAMPLE_LCD_DATA1_GPIO        (GPIO_NUM_38)
-#define EXAMPLE_LCD_DATA2_GPIO        (GPIO_NUM_18)
-#define EXAMPLE_LCD_DATA3_GPIO        (GPIO_NUM_17)
-#define EXAMPLE_LCD_DATA4_GPIO        (GPIO_NUM_10)
-#define EXAMPLE_LCD_DATA5_GPIO        (GPIO_NUM_39)
-#define EXAMPLE_LCD_DATA6_GPIO        (GPIO_NUM_0)
-#define EXAMPLE_LCD_DATA7_GPIO        (GPIO_NUM_45)
-#define EXAMPLE_LCD_DATA8_GPIO        (GPIO_NUM_48)
-#define EXAMPLE_LCD_DATA9_GPIO        (GPIO_NUM_47)
-#define EXAMPLE_LCD_DATA10_GPIO       (GPIO_NUM_21)
-#define EXAMPLE_LCD_DATA11_GPIO       (GPIO_NUM_1)
-#define EXAMPLE_LCD_DATA12_GPIO       (GPIO_NUM_2)
-#define EXAMPLE_LCD_DATA13_GPIO       (GPIO_NUM_42)
-#define EXAMPLE_LCD_DATA14_GPIO       (GPIO_NUM_41)
-#define EXAMPLE_LCD_DATA15_GPIO       (GPIO_NUM_40)
-
-#define EXAMPLE_PIN_NUM_DATA0          EXAMPLE_LCD_DATA0_GPIO
-#define EXAMPLE_PIN_NUM_DATA1          EXAMPLE_LCD_DATA1_GPIO
-#define EXAMPLE_PIN_NUM_DATA2          EXAMPLE_LCD_DATA2_GPIO
-#define EXAMPLE_PIN_NUM_DATA3          EXAMPLE_LCD_DATA3_GPIO
-#define EXAMPLE_PIN_NUM_DATA4          EXAMPLE_LCD_DATA4_GPIO
-#define EXAMPLE_PIN_NUM_DATA5          EXAMPLE_LCD_DATA5_GPIO
-#define EXAMPLE_PIN_NUM_DATA6          EXAMPLE_LCD_DATA6_GPIO
-#define EXAMPLE_PIN_NUM_DATA7          EXAMPLE_LCD_DATA7_GPIO
-#define EXAMPLE_PIN_NUM_DATA8          EXAMPLE_LCD_DATA8_GPIO
-#define EXAMPLE_PIN_NUM_DATA9          EXAMPLE_LCD_DATA9_GPIO
-#define EXAMPLE_PIN_NUM_DATA10         EXAMPLE_LCD_DATA10_GPIO
-#define EXAMPLE_PIN_NUM_DATA11         EXAMPLE_LCD_DATA11_GPIO
-#define EXAMPLE_PIN_NUM_DATA12         EXAMPLE_LCD_DATA12_GPIO
-#define EXAMPLE_PIN_NUM_DATA13         EXAMPLE_LCD_DATA13_GPIO
-#define EXAMPLE_PIN_NUM_DATA14         EXAMPLE_LCD_DATA14_GPIO
-#define EXAMPLE_PIN_NUM_DATA15         EXAMPLE_LCD_DATA15_GPIO
-#if CONFIG_EXAMPLE_LCD_DATA_LINES > 16
-#define EXAMPLE_PIN_NUM_DATA16         CONFIG_EXAMPLE_LCD_DATA16_GPIO
-#define EXAMPLE_PIN_NUM_DATA17         CONFIG_EXAMPLE_LCD_DATA17_GPIO
-#define EXAMPLE_PIN_NUM_DATA18         CONFIG_EXAMPLE_LCD_DATA18_GPIO
-#define EXAMPLE_PIN_NUM_DATA19         CONFIG_EXAMPLE_LCD_DATA19_GPIO
-#define EXAMPLE_PIN_NUM_DATA20         CONFIG_EXAMPLE_LCD_DATA20_GPIO
-#define EXAMPLE_PIN_NUM_DATA21         CONFIG_EXAMPLE_LCD_DATA21_GPIO
-#define EXAMPLE_PIN_NUM_DATA22         CONFIG_EXAMPLE_LCD_DATA22_GPIO
-#define EXAMPLE_PIN_NUM_DATA23         CONFIG_EXAMPLE_LCD_DATA23_GPIO
-#endif
 
 #if CONFIG_EXAMPLE_USE_DOUBLE_FB
 #define EXAMPLE_LCD_NUM_FB             2
@@ -124,73 +49,6 @@ static const char *TAG = "example";
 #define EXAMPLE_LVGL_TASK_PRIORITY     2
 #define EXAMPLE_LVGL_TASK_MAX_DELAY_MS 500
 #define EXAMPLE_LVGL_TASK_MIN_DELAY_MS 1000 / CONFIG_FREERTOS_HZ
-
-#define I2C_MASTER_SCL_IO           9       /*!< GPIO number used for I2C master clock */
-#define I2C_MASTER_SDA_IO           8       /*!< GPIO number used for I2C master data  */
-#define I2C_MASTER_NUM              0       /*!< I2C master i2c port number, the number of i2c peripheral interfaces available will depend on the chip */
-#define I2C_MASTER_FREQ_HZ          400000                     /*!< I2C master clock frequency */
-#define I2C_MASTER_TX_BUF_DISABLE   0                          /*!< I2C master doesn't need buffer */
-#define I2C_MASTER_RX_BUF_DISABLE   0                          /*!< I2C master doesn't need buffer */
-#define I2C_MASTER_TIMEOUT_MS       1000
-#define EXAMPLE_PIN_NUM_TOUCH_RST       (-1)            // -1 if not used
-#define EXAMPLE_PIN_NUM_TOUCH_INT       (-1)            // -1 if not used
-#define GPIO_INPUT_IO_4    4
-#define GPIO_INPUT_PIN_SEL  1ULL<<GPIO_INPUT_IO_4
-
-/**
- * @brief I2C master initialization
- */
-static esp_err_t i2c_master_init(void)
-{
-    int i2c_master_port = I2C_MASTER_NUM;
-
-    i2c_config_t i2c_conf = {
-        .mode = I2C_MODE_MASTER,
-        .sda_io_num = I2C_MASTER_SDA_IO,
-        .scl_io_num = I2C_MASTER_SCL_IO,
-        .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = I2C_MASTER_FREQ_HZ,
-    };
-
-    // Configure I2C parameters
-    i2c_param_config(i2c_master_port, &i2c_conf);
-
-    // Install I2C driver
-    return i2c_driver_install(i2c_master_port, i2c_conf.mode, 0, 0, 0);
-}
-
-// GPIO initialization
-void gpio_init(void)
-{
-    // Zero-initialize the config structure
-    gpio_config_t io_conf = {};
-    // Disable interrupt
-    io_conf.intr_type = GPIO_INTR_DISABLE;
-    // Bit mask of the pins, use GPIO4 here
-    io_conf.pin_bit_mask = GPIO_INPUT_PIN_SEL;
-    // Set as input mode
-    io_conf.mode = GPIO_MODE_OUTPUT;
-
-    gpio_config(&io_conf);
-}
-
-// Reset the touch screen
-void waveshare_esp32_s3_touch_reset()
-{
-    uint8_t write_buf = 0x01;
-    i2c_master_write_to_device(I2C_MASTER_NUM, 0x24, &write_buf, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-
-    // Reset the touch screen. It is recommended to reset the touch screen before using it.
-    write_buf = 0x2C;
-    i2c_master_write_to_device(I2C_MASTER_NUM, 0x38, &write_buf, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    esp_rom_delay_us(100 * 1000);
-    gpio_set_level(GPIO_INPUT_IO_4, 0);
-    esp_rom_delay_us(100 * 1000);
-    write_buf = 0x2E;
-    i2c_master_write_to_device(I2C_MASTER_NUM, 0x38, &write_buf, 1, I2C_MASTER_TIMEOUT_MS / portTICK_PERIOD_MS);
-    esp_rom_delay_us(200 * 1000);
-}
 
 // LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
@@ -277,96 +135,6 @@ static void touchpad_read(lv_indev_t *indev_drv, lv_indev_data_t *data)
     }
 }
 
-/*Changing the speed based on Green slider*/
-void action_speed_change(lv_event_t * e)
-{
-    lv_obj_t * slider = lv_event_get_target_obj(e);
-    /*Refresh the text*/
-    lv_label_set_text_fmt(objects.speed_value, "%" LV_PRId32, lv_slider_get_value(slider));
-}
-
-void action_map_change(lv_event_t * e)
-{
-    char* map_value = lv_label_get_text(objects.map_value);
-
-    uint32_t map_value_int = atoi(map_value);
-    map_value_int++;
-    if (map_value_int == 10){
-        map_value_int = 1;
-    }
-
-    /*Refresh the text*/
-    lv_label_set_text_fmt(objects.map_value, "%" LV_PRId32, map_value_int);
-}
-
-void action_tc_change (lv_event_t * e)
-{
-    char* tc_value = lv_label_get_text(objects.tc_value);
-
-    uint32_t tc_value_int = atoi(tc_value);
-    tc_value_int++;
-    if (tc_value_int == 10){
-        tc_value_int = 1;
-    }
-
-    /*Refresh the text*/
-    lv_label_set_text_fmt(objects.tc_value, "%" LV_PRId32, tc_value_int);
-}
-
-void action_abs_change (lv_event_t * e)
-{
-    char* abs_value = lv_label_get_text(objects.abs_value);
-
-    uint32_t abs_value_int = atoi(abs_value);
-    abs_value_int++;
-    if (abs_value_int == 10){
-        abs_value_int = 1;
-    }
-
-    /*Refresh the text*/
-    lv_label_set_text_fmt(objects.abs_value, "%" LV_PRId32, abs_value_int);
-}
-
-void action_rpm_change(lv_event_t * e)
-{
-    char* gear_value = lv_label_get_text(objects.gear_value);
-    uint32_t gear_value_int = atoi(gear_value);
-    bool is_text = false;
-
-    if(strcmp(gear_value, "N") == 0)
-    {
-        gear_value_int = 1;
-    }
-    else if(gear_value_int >= 1 && gear_value_int < 8)
-    {
-        gear_value_int++;
-    }
-    else if (gear_value_int == 8)
-    {
-        gear_value = "R";
-        is_text = true;
-    }
-    else if (strcmp(gear_value, "R") == 0)
-    {
-        gear_value = "N";
-        is_text = true;
-    }
-    else
-    {
-        gear_value = "N";
-        is_text = true;
-    }
-
-    if(is_text == false)
-    {
-        lv_label_set_text_fmt(objects.gear_value, "%" LV_PRId32, gear_value_int);
-    }
-    else
-    {
-        lv_label_set_text(objects.gear_value, gear_value);
-    }
-}
-
 void app_main(void)
 {
     ESP_LOGI(TAG, "Turn off LCD backlight");
@@ -441,14 +209,9 @@ void app_main(void)
     ESP_LOGI(TAG, "Turn on LCD backlight");
     example_bsp_set_lcd_backlight(EXAMPLE_LCD_BK_LIGHT_ON_LEVEL);
 
-    esp_lcd_touch_handle_t tp_handle = NULL; // Declare a handle for the touch panel
-    ESP_LOGI(TAG, "Initialize I2C bus");   // Log the initialization of the I2C bus
-    i2c_master_init();                     // Initialize the I2C master
-    ESP_LOGI(TAG, "Initialize GPIO");      // Log GPIO initialization
-    gpio_init();                           // Initialize GPIO pins
-    ESP_LOGI(TAG, "Initialize Touch LCD"); // Log touch LCD initialization
-    waveshare_esp32_s3_touch_reset();      // Reset the touch panel
+    gt911_touch_init();
 
+    esp_lcd_touch_handle_t tp_handle = NULL; // Declare a handle for the touch panel
     esp_lcd_panel_io_handle_t tp_io_handle = NULL;                                          // Declare a handle for touch panel I/O
     const esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_GT911_CONFIG(); // Configure I2C for GT911 touch controller
 

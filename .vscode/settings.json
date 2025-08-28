@@ -27,6 +27,8 @@
     "utility": "c",
     "variant": "c",
     "ui_helpers.h": "c",
-    "ui_screen1.h": "c"
+    "ui_screen1.h": "c",
+    "esp_lcd_touch_gt911.h": "c",
+    "gt911_touch.h": "c"
   }
 }

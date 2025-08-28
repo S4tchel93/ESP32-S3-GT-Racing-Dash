@@ -1,0 +1,77 @@
+#ifndef ST7262_LCD_H
+#define ST7262_LCD_H
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Refresh Rate = 18000000/(1+40+20+800)/(1+10+5+480) = 42Hz
+#define EXAMPLE_LCD_PIXEL_CLOCK_HZ     (16 * 1000 * 1000)
+#define EXAMPLE_LCD_H_RES              800
+#define EXAMPLE_LCD_V_RES              480
+#define EXAMPLE_LCD_HSYNC              1
+#define EXAMPLE_LCD_HBP                40
+#define EXAMPLE_LCD_HFP                20
+#define EXAMPLE_LCD_VSYNC              1
+#define EXAMPLE_LCD_VBP                10
+#define EXAMPLE_LCD_VFP                5
+
+#define EXAMPLE_LCD_BK_LIGHT_ON_LEVEL  1
+#define EXAMPLE_LCD_BK_LIGHT_OFF_LEVEL !EXAMPLE_LCD_BK_LIGHT_ON_LEVEL
+#define EXAMPLE_PIN_NUM_BK_LIGHT       -1
+#define EXAMPLE_PIN_NUM_DISP_EN        -1
+
+#define EXAMPLE_LCD_IO_RGB_VSYNC        (GPIO_NUM_3)
+#define EXAMPLE_LCD_IO_RGB_HSYNC        (GPIO_NUM_46)
+#define EXAMPLE_LCD_IO_RGB_DE           (GPIO_NUM_5)
+#define EXAMPLE_LCD_IO_RGB_PCLK         (GPIO_NUM_7)
+
+#define EXAMPLE_PIN_NUM_HSYNC          EXAMPLE_LCD_IO_RGB_HSYNC
+#define EXAMPLE_PIN_NUM_VSYNC          EXAMPLE_LCD_IO_RGB_VSYNC
+#define EXAMPLE_PIN_NUM_DE             EXAMPLE_LCD_IO_RGB_DE
+#define EXAMPLE_PIN_NUM_PCLK           EXAMPLE_LCD_IO_RGB_PCLK
+
+#define EXAMPLE_LCD_DATA0_GPIO        (GPIO_NUM_14)
+#define EXAMPLE_LCD_DATA1_GPIO        (GPIO_NUM_38)
+#define EXAMPLE_LCD_DATA2_GPIO        (GPIO_NUM_18)
+#define EXAMPLE_LCD_DATA3_GPIO        (GPIO_NUM_17)
+#define EXAMPLE_LCD_DATA4_GPIO        (GPIO_NUM_10)
+#define EXAMPLE_LCD_DATA5_GPIO        (GPIO_NUM_39)
+#define EXAMPLE_LCD_DATA6_GPIO        (GPIO_NUM_0)
+#define EXAMPLE_LCD_DATA7_GPIO        (GPIO_NUM_45)
+#define EXAMPLE_LCD_DATA8_GPIO        (GPIO_NUM_48)
+#define EXAMPLE_LCD_DATA9_GPIO        (GPIO_NUM_47)
+#define EXAMPLE_LCD_DATA10_GPIO       (GPIO_NUM_21)
+#define EXAMPLE_LCD_DATA11_GPIO       (GPIO_NUM_1)
+#define EXAMPLE_LCD_DATA12_GPIO       (GPIO_NUM_2)
+#define EXAMPLE_LCD_DATA13_GPIO       (GPIO_NUM_42)
+#define EXAMPLE_LCD_DATA14_GPIO       (GPIO_NUM_41)
+#define EXAMPLE_LCD_DATA15_GPIO       (GPIO_NUM_40)
+
+#define EXAMPLE_PIN_NUM_DATA0          EXAMPLE_LCD_DATA0_GPIO
+#define EXAMPLE_PIN_NUM_DATA1          EXAMPLE_LCD_DATA1_GPIO
+#define EXAMPLE_PIN_NUM_DATA2          EXAMPLE_LCD_DATA2_GPIO
+#define EXAMPLE_PIN_NUM_DATA3          EXAMPLE_LCD_DATA3_GPIO
+#define EXAMPLE_PIN_NUM_DATA4          EXAMPLE_LCD_DATA4_GPIO
+#define EXAMPLE_PIN_NUM_DATA5          EXAMPLE_LCD_DATA5_GPIO
+#define EXAMPLE_PIN_NUM_DATA6          EXAMPLE_LCD_DATA6_GPIO
+#define EXAMPLE_PIN_NUM_DATA7          EXAMPLE_LCD_DATA7_GPIO
+#define EXAMPLE_PIN_NUM_DATA8          EXAMPLE_LCD_DATA8_GPIO
+#define EXAMPLE_PIN_NUM_DATA9          EXAMPLE_LCD_DATA9_GPIO
+#define EXAMPLE_PIN_NUM_DATA10         EXAMPLE_LCD_DATA10_GPIO
+#define EXAMPLE_PIN_NUM_DATA11         EXAMPLE_LCD_DATA11_GPIO
+#define EXAMPLE_PIN_NUM_DATA12         EXAMPLE_LCD_DATA12_GPIO
+#define EXAMPLE_PIN_NUM_DATA13         EXAMPLE_LCD_DATA13_GPIO
+#define EXAMPLE_PIN_NUM_DATA14         EXAMPLE_LCD_DATA14_GPIO
+#define EXAMPLE_PIN_NUM_DATA15         EXAMPLE_LCD_DATA15_GPIO
+#if CONFIG_EXAMPLE_LCD_DATA_LINES > 16
+#define EXAMPLE_PIN_NUM_DATA16         CONFIG_EXAMPLE_LCD_DATA16_GPIO
+#define EXAMPLE_PIN_NUM_DATA17         CONFIG_EXAMPLE_LCD_DATA17_GPIO
+#define EXAMPLE_PIN_NUM_DATA18         CONFIG_EXAMPLE_LCD_DATA18_GPIO
+#define EXAMPLE_PIN_NUM_DATA19         CONFIG_EXAMPLE_LCD_DATA19_GPIO
+#define EXAMPLE_PIN_NUM_DATA20         CONFIG_EXAMPLE_LCD_DATA20_GPIO
+#define EXAMPLE_PIN_NUM_DATA21         CONFIG_EXAMPLE_LCD_DATA21_GPIO
+#define EXAMPLE_PIN_NUM_DATA22         CONFIG_EXAMPLE_LCD_DATA22_GPIO
+#define EXAMPLE_PIN_NUM_DATA23         CONFIG_EXAMPLE_LCD_DATA23_GPIO
+#endif
+
+#endif

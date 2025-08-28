@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "rgb_panel",
-    "project_version":    "4aca7c6-dirty",
+    "project_version":    "fffc814-dirty",
     "project_path":       "H:/development/rgb_panel",
     "idf_path":           "C:/Users/Diego/esp/v5.5/esp-idf",
     "build_dir":          "H:/development/rgb_panel",
@@ -775,7 +775,7 @@
             "managed_reqs": [],
             "managed_priv_reqs": [ "espressif__esp_lcd_touch", "espressif__esp_lcd_touch_gt911", "lvgl__lvgl" ],
             "file": "H:/development/rgb_panel/esp-idf/main/libmain.a",
-            "sources": [ "H:/development/rgb_panel/main/main.c" ],
+            "sources": [ "H:/development/rgb_panel/main/main.c", "H:/development/rgb_panel/main/gt911_touch.c" ],
             "include_dirs": [ "." ]
         },
         "mbedtls": {
