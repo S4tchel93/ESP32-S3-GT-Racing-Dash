@@ -109,33 +109,9 @@ void app_main(void)
     esp_lcd_panel_handle_t panel_handle = *panel_handle_p;
     
     ESP_LOGI(TAG, "Install TOUCH panel driver");
-    gt911_touch_init();
-
-    esp_lcd_touch_handle_t tp_handle = NULL; // Declare a handle for the touch panel
-    esp_lcd_panel_io_handle_t tp_io_handle = NULL;                                          // Declare a handle for touch panel I/O
-    const esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_GT911_CONFIG(); // Configure I2C for GT911 touch controller
-
-    ESP_LOGI(TAG, "Initialize I2C panel IO");                                                                          // Log I2C panel I/O initialization
-    ESP_ERROR_CHECK(esp_lcd_new_panel_io_i2c((esp_lcd_i2c_bus_handle_t)I2C_MASTER_NUM, &tp_io_config, &tp_io_handle)); // Create new I2C panel I/O
-
-    ESP_LOGI(TAG, "Initialize touch controller GT911"); // Log touch controller initialization
-    const esp_lcd_touch_config_t tp_cfg = {
-        .x_max = EXAMPLE_LCD_H_RES,                // Set maximum X coordinate
-        .y_max = EXAMPLE_LCD_V_RES,                // Set maximum Y coordinate
-        .rst_gpio_num = EXAMPLE_PIN_NUM_TOUCH_RST, // GPIO number for reset
-        .int_gpio_num = EXAMPLE_PIN_NUM_TOUCH_INT, // GPIO number for interrupt
-        .levels = {
-            .reset = 0,     // Reset level
-            .interrupt = 0, // Interrupt level
-        },
-        .flags = {
-            .swap_xy = 0,  // No swap of X and Y
-            .mirror_x = 0, // No mirroring of X
-            .mirror_y = 0, // No mirroring of Y
-        },
-    };
-    ESP_ERROR_CHECK(esp_lcd_touch_new_i2c_gt911(tp_io_handle, &tp_cfg, &tp_handle)); // Create new I2C GT911 touch controller         
-
+    esp_lcd_touch_handle_t* tp_handle_p = gt911_touch_init();
+    esp_lcd_touch_handle_t tp_handle = *tp_handle_p;
+    
     ESP_LOGI(TAG, "Initialize LVGL library");
     lv_init();
     // create a lvgl display
@@ -145,7 +121,7 @@ void app_main(void)
     
     /* Register a touchpad input device */
     lv_indev_t *indev = lv_indev_create(); 
-    lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER); // Set the input device type
+        lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER); // Set the input device type
     lv_indev_set_read_cb(indev, touchpad_read); // Set the read callback function
     lv_indev_set_driver_data(indev, tp_handle); // Set driver data to the touch panel handle
 

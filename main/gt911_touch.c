@@ -1,9 +1,12 @@
 #include "gt911_touch.h"
 #include "driver/i2c.h"
 #include "esp_log.h"
+#include "esp_err.h"
+#include "st7262_lcd.h"
 
 static const char *TAG = "GT911";
 
+static esp_lcd_touch_handle_t tp_handle = NULL; // Declare a handle for the touch panel
 
 /**
  * @brief I2C master initialization
@@ -60,7 +63,7 @@ static void waveshare_esp32_s3_touch_reset()
     esp_rom_delay_us(200 * 1000);
 }
 
-void gt911_touch_init(void)
+esp_lcd_touch_handle_t* gt911_touch_init(void)
 {
     ESP_LOGI(TAG, "Initialize I2C bus");   // Log the initialization of the I2C bus
     i2c_master_init();                     // Initialize the I2C master
@@ -68,4 +71,30 @@ void gt911_touch_init(void)
     gpio_init();                           // Initialize GPIO pins
     ESP_LOGI(TAG, "Initialize Touch LCD"); // Log touch LCD initialization
     waveshare_esp32_s3_touch_reset();      // Reset the touch panel
+
+    esp_lcd_panel_io_handle_t tp_io_handle = NULL;                                          // Declare a handle for touch panel I/O
+    const esp_lcd_panel_io_i2c_config_t tp_io_config = ESP_LCD_TOUCH_IO_I2C_GT911_CONFIG(); // Configure I2C for GT911 touch controller
+
+    ESP_LOGI(TAG, "Initialize I2C panel IO");                                                                          // Log I2C panel I/O initialization
+    ESP_ERROR_CHECK(esp_lcd_new_panel_io_i2c((esp_lcd_i2c_bus_handle_t)I2C_MASTER_NUM, &tp_io_config, &tp_io_handle)); // Create new I2C panel I/O
+
+    ESP_LOGI(TAG, "Initialize touch controller GT911"); // Log touch controller initialization
+    const esp_lcd_touch_config_t tp_cfg = {
+        .x_max = EXAMPLE_LCD_H_RES,                // Set maximum X coordinate
+        .y_max = EXAMPLE_LCD_V_RES,                // Set maximum Y coordinate
+        .rst_gpio_num = EXAMPLE_PIN_NUM_TOUCH_RST, // GPIO number for reset
+        .int_gpio_num = EXAMPLE_PIN_NUM_TOUCH_INT, // GPIO number for interrupt
+        .levels = {
+            .reset = 0,     // Reset level
+            .interrupt = 0, // Interrupt level
+        },
+        .flags = {
+            .swap_xy = 0,  // No swap of X and Y
+            .mirror_x = 0, // No mirroring of X
+            .mirror_y = 0, // No mirroring of Y
+        },
+    };
+    ESP_ERROR_CHECK(esp_lcd_touch_new_i2c_gt911(tp_io_handle, &tp_cfg, &tp_handle)); // Create new I2C GT911 touch controller 
+
+    return &tp_handle;
 }

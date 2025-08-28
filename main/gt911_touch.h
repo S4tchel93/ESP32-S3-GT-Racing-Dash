@@ -2,6 +2,7 @@
 #define GT911_TOUCH_H
 
 #include "driver/gpio.h"
+#include "esp_lcd_touch_gt911.h"
 
 #define I2C_MASTER_SCL_IO           9       /*!< GPIO number used for I2C master clock */
 #define I2C_MASTER_SDA_IO           8       /*!< GPIO number used for I2C master data  */
@@ -15,6 +16,6 @@
 #define GPIO_INPUT_IO_4    4
 #define GPIO_INPUT_PIN_SEL  1ULL<<GPIO_INPUT_IO_4
 
-extern void gt911_touch_init(void);
+extern esp_lcd_touch_handle_t* gt911_touch_init(void);
 
 #endif
