@@ -1,6 +1,10 @@
 #ifndef ST7262_LCD_H
 #define ST7262_LCD_H
 
+#include "esp_lcd_panel_rgb.h"
+#include "esp_lcd_types.h"
+#include "driver/gpio.h"
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,5 +77,23 @@
 #define EXAMPLE_PIN_NUM_DATA22         CONFIG_EXAMPLE_LCD_DATA22_GPIO
 #define EXAMPLE_PIN_NUM_DATA23         CONFIG_EXAMPLE_LCD_DATA23_GPIO
 #endif
+
+#if CONFIG_EXAMPLE_LCD_DATA_LINES_16
+#define EXAMPLE_DATA_BUS_WIDTH         16
+#define EXAMPLE_PIXEL_SIZE             2
+#define EXAMPLE_LV_COLOR_FORMAT        LV_COLOR_FORMAT_RGB565
+#elif CONFIG_EXAMPLE_LCD_DATA_LINES_24
+#define EXAMPLE_DATA_BUS_WIDTH         24
+#define EXAMPLE_PIXEL_SIZE             3
+#define EXAMPLE_LV_COLOR_FORMAT        LV_COLOR_FORMAT_RGB888
+#endif
+
+#if CONFIG_EXAMPLE_USE_DOUBLE_FB
+#define EXAMPLE_LCD_NUM_FB             2
+#else
+#define EXAMPLE_LCD_NUM_FB             1
+#endif // CONFIG_EXAMPLE_USE_DOUBLE_FB
+
+extern esp_lcd_panel_handle_t* st7262_lcd_init(void);
 
 #endif
