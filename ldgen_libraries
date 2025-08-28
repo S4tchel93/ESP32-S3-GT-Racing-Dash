@@ -34,7 +34,6 @@ H:/development/rgb_panel/esp-idf/esp_psram/libesp_psram.a
 H:/development/rgb_panel/esp-idf/esp_security/libesp_security.a
 H:/development/rgb_panel/esp-idf/pthread/libpthread.a
 H:/development/rgb_panel/esp-idf/esp_driver_gpio/libesp_driver_gpio.a
-H:/development/rgb_panel/esp-idf/esp_timer/libesp_timer.a
 H:/development/rgb_panel/esp-idf/esp_pm/libesp_pm.a
 H:/development/rgb_panel/esp-idf/mbedtls/libmbedtls.a
 H:/development/rgb_panel/esp-idf/esp_app_format/libesp_app_format.a
@@ -56,6 +55,10 @@ H:/development/rgb_panel/esp-idf/freertos/libfreertos.a
 H:/development/rgb_panel/esp-idf/newlib/libnewlib.a
 H:/development/rgb_panel/esp-idf/pthread/libpthread.a
 H:/development/rgb_panel/esp-idf/cxx/libcxx.a
+H:/development/rgb_panel/esp-idf/esp_timer/libesp_timer.a
+H:/development/rgb_panel/esp-idf/lvgl__lvgl/liblvgl__lvgl.a
+H:/development/rgb_panel/esp-idf/ui/libui.a
+H:/development/rgb_panel/esp-idf/lvgl__lvgl/liblvgl__lvgl.a
 H:/development/rgb_panel/esp-idf/esp_ringbuf/libesp_ringbuf.a
 H:/development/rgb_panel/esp-idf/esp_driver_pcnt/libesp_driver_pcnt.a
 H:/development/rgb_panel/esp-idf/esp_driver_gptimer/libesp_driver_gptimer.a
@@ -98,7 +101,6 @@ H:/development/rgb_panel/esp-idf/espressif__esp_lcd_touch/libespressif__esp_lcd_
 H:/development/rgb_panel/esp-idf/esp_lcd/libesp_lcd.a
 H:/development/rgb_panel/esp-idf/espressif__esp_lcd_touch_gt911/libespressif__esp_lcd_touch_gt911.a
 H:/development/rgb_panel/esp-idf/espressif__esp_lcd_touch/libespressif__esp_lcd_touch.a
-H:/development/rgb_panel/esp-idf/lvgl__lvgl/liblvgl__lvgl.a
 H:/development/rgb_panel/esp-idf/main/libmain.a
+H:/development/rgb_panel/esp-idf/ui/libui.a
 H:/development/rgb_panel/esp-idf/espressif__esp_lcd_touch_gt911/libespressif__esp_lcd_touch_gt911.a
-H:/development/rgb_panel/esp-idf/lvgl__lvgl/liblvgl__lvgl.a

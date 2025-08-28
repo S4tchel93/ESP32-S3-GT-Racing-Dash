@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "rgb_panel",
-    "project_version":    "f0a43d2-dirty",
+    "project_version":    "4aca7c6-dirty",
     "project_path":       "H:/development/rgb_panel",
     "idf_path":           "C:/Users/Diego/esp/v5.5/esp-idf",
     "build_dir":          "H:/development/rgb_panel",
@@ -25,8 +25,8 @@
         "COMPONENT_KCONFIGS_PROJBUILD" : "C:/Users/Diego/esp/v5.5/esp-idf/components/bootloader/Kconfig.projbuild;C:/Users/Diego/esp/v5.5/esp-idf/components/esp_app_format/Kconfig.projbuild;C:/Users/Diego/esp/v5.5/esp-idf/components/esp_rom/Kconfig.projbuild;C:/Users/Diego/esp/v5.5/esp-idf/components/esptool_py/Kconfig.projbuild;C:/Users/Diego/esp/v5.5/esp-idf/components/partition_table/Kconfig.projbuild;H:/development/rgb_panel/main/Kconfig.projbuild"
     },
     "common_component_reqs": [ "cxx", "newlib", "freertos", "esp_hw_support", "heap", "log", "soc", "hal", "esp_rom", "esp_common", "esp_system", "xtensa" ],
-    "build_components" : [ "app_update", "bootloader", "bootloader_support", "cxx", "driver", "efuse", "esp_app_format", "esp_bootloader_format", "esp_common", "esp_driver_ana_cmpr", "esp_driver_bitscrambler", "esp_driver_dac", "esp_driver_gpio", "esp_driver_gptimer", "esp_driver_i2c", "esp_driver_i2s", "esp_driver_ledc", "esp_driver_mcpwm", "esp_driver_parlio", "esp_driver_pcnt", "esp_driver_rmt", "esp_driver_sdio", "esp_driver_sdm", "esp_driver_sdmmc", "esp_driver_sdspi", "esp_driver_spi", "esp_driver_tsens", "esp_driver_twai", "esp_driver_uart", "esp_driver_usb_serial_jtag", "esp_hw_support", "esp_lcd", "esp_mm", "esp_partition", "esp_pm", "esp_psram", "esp_ringbuf", "esp_rom", "esp_security", "esp_system", "esp_timer", "espressif__esp_lcd_touch", "espressif__esp_lcd_touch_gt911", "esptool_py", "freertos", "hal", "heap", "log", "lvgl__lvgl", "main", "mbedtls", "newlib", "partition_table", "pthread", "sdmmc", "soc", "spi_flash", "xtensa", "" ],
-    "build_component_paths" : [ "C:/Users/Diego/esp/v5.5/esp-idf/components/app_update", "C:/Users/Diego/esp/v5.5/esp-idf/components/bootloader", "C:/Users/Diego/esp/v5.5/esp-idf/components/bootloader_support", "C:/Users/Diego/esp/v5.5/esp-idf/components/cxx", "C:/Users/Diego/esp/v5.5/esp-idf/components/driver", "C:/Users/Diego/esp/v5.5/esp-idf/components/efuse", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_app_format", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_bootloader_format", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_common", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_ana_cmpr", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_bitscrambler", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_dac", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_gpio", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_gptimer", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_i2c", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_i2s", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_ledc", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_mcpwm", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_parlio", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_pcnt", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_rmt", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_sdio", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_sdm", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_sdmmc", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_sdspi", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_spi", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_tsens", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_twai", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_uart", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_usb_serial_jtag", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_hw_support", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_lcd", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_mm", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_partition", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_pm", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_psram", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_ringbuf", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_rom", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_security", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_system", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_timer", "H:/development/rgb_panel/managed_components/espressif__esp_lcd_touch", "H:/development/rgb_panel/managed_components/espressif__esp_lcd_touch_gt911", "C:/Users/Diego/esp/v5.5/esp-idf/components/esptool_py", "C:/Users/Diego/esp/v5.5/esp-idf/components/freertos", "C:/Users/Diego/esp/v5.5/esp-idf/components/hal", "C:/Users/Diego/esp/v5.5/esp-idf/components/heap", "C:/Users/Diego/esp/v5.5/esp-idf/components/log", "H:/development/rgb_panel/managed_components/lvgl__lvgl", "H:/development/rgb_panel/main", "C:/Users/Diego/esp/v5.5/esp-idf/components/mbedtls", "C:/Users/Diego/esp/v5.5/esp-idf/components/newlib", "C:/Users/Diego/esp/v5.5/esp-idf/components/partition_table", "C:/Users/Diego/esp/v5.5/esp-idf/components/pthread", "C:/Users/Diego/esp/v5.5/esp-idf/components/sdmmc", "C:/Users/Diego/esp/v5.5/esp-idf/components/soc", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash", "C:/Users/Diego/esp/v5.5/esp-idf/components/xtensa", "" ],
+    "build_components" : [ "app_update", "bootloader", "bootloader_support", "cxx", "driver", "efuse", "esp_app_format", "esp_bootloader_format", "esp_common", "esp_driver_ana_cmpr", "esp_driver_bitscrambler", "esp_driver_dac", "esp_driver_gpio", "esp_driver_gptimer", "esp_driver_i2c", "esp_driver_i2s", "esp_driver_ledc", "esp_driver_mcpwm", "esp_driver_parlio", "esp_driver_pcnt", "esp_driver_rmt", "esp_driver_sdio", "esp_driver_sdm", "esp_driver_sdmmc", "esp_driver_sdspi", "esp_driver_spi", "esp_driver_tsens", "esp_driver_twai", "esp_driver_uart", "esp_driver_usb_serial_jtag", "esp_hw_support", "esp_lcd", "esp_mm", "esp_partition", "esp_pm", "esp_psram", "esp_ringbuf", "esp_rom", "esp_security", "esp_system", "esp_timer", "espressif__esp_lcd_touch", "espressif__esp_lcd_touch_gt911", "esptool_py", "freertos", "hal", "heap", "log", "lvgl__lvgl", "main", "mbedtls", "newlib", "partition_table", "pthread", "sdmmc", "soc", "spi_flash", "ui", "xtensa", "" ],
+    "build_component_paths" : [ "C:/Users/Diego/esp/v5.5/esp-idf/components/app_update", "C:/Users/Diego/esp/v5.5/esp-idf/components/bootloader", "C:/Users/Diego/esp/v5.5/esp-idf/components/bootloader_support", "C:/Users/Diego/esp/v5.5/esp-idf/components/cxx", "C:/Users/Diego/esp/v5.5/esp-idf/components/driver", "C:/Users/Diego/esp/v5.5/esp-idf/components/efuse", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_app_format", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_bootloader_format", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_common", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_ana_cmpr", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_bitscrambler", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_dac", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_gpio", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_gptimer", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_i2c", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_i2s", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_ledc", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_mcpwm", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_parlio", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_pcnt", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_rmt", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_sdio", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_sdm", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_sdmmc", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_sdspi", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_spi", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_tsens", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_twai", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_uart", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_driver_usb_serial_jtag", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_hw_support", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_lcd", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_mm", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_partition", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_pm", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_psram", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_ringbuf", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_rom", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_security", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_system", "C:/Users/Diego/esp/v5.5/esp-idf/components/esp_timer", "H:/development/rgb_panel/managed_components/espressif__esp_lcd_touch", "H:/development/rgb_panel/managed_components/espressif__esp_lcd_touch_gt911", "C:/Users/Diego/esp/v5.5/esp-idf/components/esptool_py", "C:/Users/Diego/esp/v5.5/esp-idf/components/freertos", "C:/Users/Diego/esp/v5.5/esp-idf/components/hal", "C:/Users/Diego/esp/v5.5/esp-idf/components/heap", "C:/Users/Diego/esp/v5.5/esp-idf/components/log", "H:/development/rgb_panel/managed_components/lvgl__lvgl", "H:/development/rgb_panel/main", "C:/Users/Diego/esp/v5.5/esp-idf/components/mbedtls", "C:/Users/Diego/esp/v5.5/esp-idf/components/newlib", "C:/Users/Diego/esp/v5.5/esp-idf/components/partition_table", "C:/Users/Diego/esp/v5.5/esp-idf/components/pthread", "C:/Users/Diego/esp/v5.5/esp-idf/components/sdmmc", "C:/Users/Diego/esp/v5.5/esp-idf/components/soc", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash", "H:/development/rgb_panel/components/ui", "C:/Users/Diego/esp/v5.5/esp-idf/components/xtensa", "" ],
     "build_component_info" : {
         "app_update": {
             "alias": "idf::app_update",
@@ -770,12 +770,12 @@
             "dir": "H:/development/rgb_panel/main",
             "type": "LIBRARY",
             "lib": "__idf_main",
-            "reqs": [],
+            "reqs": [ "ui" ],
             "priv_reqs": [ "esp_lcd", "espressif__esp_lcd_touch", "espressif__esp_lcd_touch_gt911", "lvgl__lvgl" ],
             "managed_reqs": [],
             "managed_priv_reqs": [ "espressif__esp_lcd_touch", "espressif__esp_lcd_touch_gt911", "lvgl__lvgl" ],
             "file": "H:/development/rgb_panel/esp-idf/main/libmain.a",
-            "sources": [ "H:/development/rgb_panel/main/ui_image_wiper_64.c", "H:/development/rgb_panel/main/ui_image_engine_64.c", "H:/development/rgb_panel/main/main.c", "H:/development/rgb_panel/main/ui.c", "H:/development/rgb_panel/main/styles.c", "H:/development/rgb_panel/main/screens.c", "H:/development/rgb_panel/main/images.c", "H:/development/rgb_panel/main/ui_font_zen_dots120.c" ],
+            "sources": [ "H:/development/rgb_panel/main/main.c" ],
             "include_dirs": [ "." ]
         },
         "mbedtls": {
@@ -882,6 +882,21 @@
             "file": "H:/development/rgb_panel/esp-idf/spi_flash/libspi_flash.a",
             "sources": [ "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/flash_brownout_hook.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/esp32s3/spi_flash_oct_flash_init.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/spi_flash_hpm_enable.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/spi_flash_chip_drivers.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/spi_flash_chip_generic.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/spi_flash_chip_issi.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/spi_flash_chip_mxic.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/spi_flash_chip_gd.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/spi_flash_chip_winbond.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/spi_flash_chip_boya.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/spi_flash_chip_mxic_opi.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/spi_flash_chip_th.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/memspi_host_driver.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/cache_utils.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/flash_mmap.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/flash_ops.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/spi_flash_wrap.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/esp_flash_api.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/esp_flash_spi_init.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/spi_flash_os_func_app.c", "C:/Users/Diego/esp/v5.5/esp-idf/components/spi_flash/spi_flash_os_func_noos.c" ],
             "include_dirs": [ "include" ]
+        },
+        "ui": {
+            "alias": "idf::ui",
+            "target": "___idf_ui",
+            "prefix": "idf",
+            "dir": "H:/development/rgb_panel/components/ui",
+            "type": "LIBRARY",
+            "lib": "__idf_ui",
+            "reqs": [ "lvgl__lvgl" ],
+            "priv_reqs": [],
+            "managed_reqs": [],
+            "managed_priv_reqs": [],
+            "file": "H:/development/rgb_panel/esp-idf/ui/libui.a",
+            "sources": [ "H:/development/rgb_panel/components/ui/fonts/ui_font_zen_dots120.c", "H:/development/rgb_panel/components/ui/images/ui_image_engine_64.c", "H:/development/rgb_panel/components/ui/images/ui_image_wiper_64.c", "H:/development/rgb_panel/components/ui/images/ui_image_light_64.c", "H:/development/rgb_panel/components/ui/images.c", "H:/development/rgb_panel/components/ui/screens.c", "H:/development/rgb_panel/components/ui/styles.c", "H:/development/rgb_panel/components/ui/ui.c" ],
+            "include_dirs": [ "." ]
         },
         "xtensa": {
             "alias": "idf::xtensa",
@@ -2202,10 +2217,22 @@
             "prefix": "idf",
             "dir": "H:/development/rgb_panel/main",
             "lib": "__idf_main",
-            "reqs": [],
+            "reqs": [ "ui" ],
             "priv_reqs": [ "esp_lcd", "espressif__esp_lcd_touch", "espressif__esp_lcd_touch_gt911", "lvgl__lvgl" ],
             "managed_reqs": [],
             "managed_priv_reqs": [ "espressif__esp_lcd_touch", "espressif__esp_lcd_touch_gt911", "lvgl__lvgl" ],
+            "include_dirs": [ "." ]
+        },
+        "ui": {
+            "alias": "idf::ui",
+            "target": "___idf_ui",
+            "prefix": "idf",
+            "dir": "H:/development/rgb_panel/components/ui",
+            "lib": "__idf_ui",
+            "reqs": [ "lvgl__lvgl" ],
+            "priv_reqs": [],
+            "managed_reqs": [],
+            "managed_priv_reqs": [],
             "include_dirs": [ "." ]
         },
         "espressif__esp_lcd_touch": {
