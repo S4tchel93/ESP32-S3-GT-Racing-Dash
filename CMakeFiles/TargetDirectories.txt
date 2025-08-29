@@ -352,6 +352,13 @@ H:/development/rgb_panel/esp-idf/ui/CMakeFiles/list_install_components.dir
 H:/development/rgb_panel/esp-idf/ui/CMakeFiles/install.dir
 H:/development/rgb_panel/esp-idf/ui/CMakeFiles/install/local.dir
 H:/development/rgb_panel/esp-idf/ui/CMakeFiles/install/strip.dir
+H:/development/rgb_panel/esp-idf/usb/CMakeFiles/__idf_usb.dir
+H:/development/rgb_panel/esp-idf/usb/CMakeFiles/edit_cache.dir
+H:/development/rgb_panel/esp-idf/usb/CMakeFiles/rebuild_cache.dir
+H:/development/rgb_panel/esp-idf/usb/CMakeFiles/list_install_components.dir
+H:/development/rgb_panel/esp-idf/usb/CMakeFiles/install.dir
+H:/development/rgb_panel/esp-idf/usb/CMakeFiles/install/local.dir
+H:/development/rgb_panel/esp-idf/usb/CMakeFiles/install/strip.dir
 H:/development/rgb_panel/esp-idf/esp_ringbuf/CMakeFiles/__idf_esp_ringbuf.dir
 H:/development/rgb_panel/esp-idf/esp_ringbuf/CMakeFiles/edit_cache.dir
 H:/development/rgb_panel/esp-idf/esp_ringbuf/CMakeFiles/rebuild_cache.dir

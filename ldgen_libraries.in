@@ -59,6 +59,7 @@ $<TARGET_FILE:idf::esp_timer>
 $<TARGET_FILE:idf::lvgl__lvgl>
 $<TARGET_FILE:idf::ui>
 $<TARGET_FILE:__idf_lvgl__lvgl>
+$<TARGET_FILE:idf::usb>
 $<TARGET_FILE:idf::esp_ringbuf>
 $<TARGET_FILE:idf::esp_driver_pcnt>
 $<TARGET_FILE:idf::esp_driver_gptimer>
@@ -103,4 +104,5 @@ $<TARGET_FILE:idf::espressif__esp_lcd_touch_gt911>
 $<TARGET_FILE:__idf_espressif__esp_lcd_touch>
 $<TARGET_FILE:idf::main>
 $<TARGET_FILE:__idf_ui>
+$<TARGET_FILE:__idf_usb>
 $<TARGET_FILE:__idf_espressif__esp_lcd_touch_gt911>

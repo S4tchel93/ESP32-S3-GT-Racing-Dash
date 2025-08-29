@@ -16403,6 +16403,220 @@
                 "children": [
                     {
                         "children": [],
+                        "depends_on": "SOC_USB_OTG_SUPPORTED",
+                        "help": "Each USB device attached is allocated a dedicated buffer for its OUT/IN transfers to/from the device's\ncontrol endpoint. The maximum size of that buffer is determined by this option. The limited size of the\ntransfer buffer have the following implications:\n- The maximum length of control transfers is limited\n- Device's with configuration descriptors larger than this limit cannot be supported",
+                        "id": "USB_HOST_CONTROL_TRANSFER_MAX_SIZE",
+                        "name": "USB_HOST_CONTROL_TRANSFER_MAX_SIZE",
+                        "range": null,
+                        "title": "Largest size (in bytes) of transfers to/from default endpoints",
+                        "type": "int"
+                    },
+                    {
+                        "children": [
+                            {
+                                "children": [],
+                                "depends_on": "<choice USB_HOST_HW_BUFFER_BIAS>",
+                                "help": null,
+                                "id": "USB_HOST_HW_BUFFER_BIAS_BALANCED",
+                                "name": "USB_HOST_HW_BUFFER_BIAS_BALANCED",
+                                "range": null,
+                                "title": "Balanced",
+                                "type": "bool"
+                            },
+                            {
+                                "children": [],
+                                "depends_on": "<choice USB_HOST_HW_BUFFER_BIAS>",
+                                "help": null,
+                                "id": "USB_HOST_HW_BUFFER_BIAS_IN",
+                                "name": "USB_HOST_HW_BUFFER_BIAS_IN",
+                                "range": null,
+                                "title": "Bias IN",
+                                "type": "bool"
+                            },
+                            {
+                                "children": [],
+                                "depends_on": "<choice USB_HOST_HW_BUFFER_BIAS>",
+                                "help": null,
+                                "id": "USB_HOST_HW_BUFFER_BIAS_PERIODIC_OUT",
+                                "name": "USB_HOST_HW_BUFFER_BIAS_PERIODIC_OUT",
+                                "range": null,
+                                "title": "Periodic OUT",
+                                "type": "bool"
+                            }
+                        ],
+                        "depends_on": "SOC_USB_OTG_SUPPORTED",
+                        "help": "The underlying hardware has size adjustable FIFOs to cache USB packets on reception (IN) or for\ntransmission (OUT). The size of these FIFOs will affect the largest MPS (maximum packet size) and the\nmaximum number of packets that can be cached at any one time. The hardware contains the following\nFIFOS: RX (for all IN packets), Non-periodic TX (for Bulk and Control OUT packets), and Periodic TX\n(for Interrupt and Isochronous OUT packets). This configuration option allows biasing the FIFO sizes\ntowards a particular use case, which may be necessary for devices that have endpoints with large MPS.\nThe MPS limits for each biasing are listed below:\n\nBalanced:\n- IN (all transfer types), 408 bytes\n- OUT non-periodic (Bulk/Control), 192 bytes (i.e., 3 x 64 byte packets)\n- OUT periodic (Interrupt/Isochronous), 192 bytes\n\nBias IN:\n- IN (all transfer types), 600 bytes\n- OUT non-periodic (Bulk/Control), 64 bytes (i.e., 1 x 64 byte packets)\n- OUT periodic (Interrupt/Isochronous), 128 bytes\n\nBias Periodic OUT:\n- IN (all transfer types), 128 bytes\n- OUT non-periodic (Bulk/Control), 64 bytes (i.e., 1 x 64 byte packets)\n- OUT periodic (Interrupt/Isochronous), 600 bytes",
+                        "id": "component-config-usb-otg-hardware-fifo-size-biasing",
+                        "name": "USB_HOST_HW_BUFFER_BIAS",
+                        "title": "Hardware FIFO size biasing",
+                        "type": "choice"
+                    },
+                    {
+                        "children": [
+                            {
+                                "children": [
+                                    {
+                                        "children": [],
+                                        "depends_on": "SOC_USB_OTG_SUPPORTED",
+                                        "help": "On connection of a USB device, the USB 2.0 specification requires\na \"debounce interval with a minimum duration of 100ms\" to allow the connection to stabilize\n(see USB 2.0 chapter 7.1.7.3 for more details).\nDuring the debounce interval, no new connection/disconnection events are registered.\n\nThe default value is set to 250 ms to be safe.",
+                                        "id": "USB_HOST_DEBOUNCE_DELAY_MS",
+                                        "name": "USB_HOST_DEBOUNCE_DELAY_MS",
+                                        "range": null,
+                                        "title": "Debounce delay in ms",
+                                        "type": "int"
+                                    },
+                                    {
+                                        "children": [],
+                                        "depends_on": "SOC_USB_OTG_SUPPORTED",
+                                        "help": "The reset signaling can be generated on any Hub or Host Controller port by request from\nthe USB System Software. The USB 2.0 specification requires that \"the reset signaling must\nbe driven for a minimum of 10ms\" (see USB 2.0 chapter 7.1.7.5 for more details).\nAfter the reset, the hub port will transition to the Enabled state (refer to Section 11.5).\n\nThe default value is set to 30 ms to be safe.",
+                                        "id": "USB_HOST_RESET_HOLD_MS",
+                                        "name": "USB_HOST_RESET_HOLD_MS",
+                                        "range": null,
+                                        "title": "Reset hold in ms",
+                                        "type": "int"
+                                    },
+                                    {
+                                        "children": [],
+                                        "depends_on": "SOC_USB_OTG_SUPPORTED",
+                                        "help": "After a port stops driving the reset signal, the USB 2.0 specification requires that\nthe \"USB System Software guarantees a minimum of 10 ms for reset recovery\" before the\nattached device is expected to respond to data transfers (see USB 2.0 chapter 7.1.7.3 for\nmore details).\nThe device may ignore any data transfers during the recovery interval.\n\nThe default value is set to 30 ms to be safe.",
+                                        "id": "USB_HOST_RESET_RECOVERY_MS",
+                                        "name": "USB_HOST_RESET_RECOVERY_MS",
+                                        "range": null,
+                                        "title": "Reset recovery delay in ms",
+                                        "type": "int"
+                                    },
+                                    {
+                                        "children": [],
+                                        "depends_on": "SOC_USB_OTG_SUPPORTED",
+                                        "help": "\"After successful completion of the Status stage, the device is allowed a SetAddress()\nrecovery interval of 2 ms. At the end of this interval, the device must be able to accept\nSetup packets addressed to the new address. Also, at the end of the recovery interval, the\ndevice must not respond to tokens sent to the old address (unless, of course, the old and new\naddress is the same).\" See USB 2.0 chapter 9.2.6.3 for more details.\n\nThe default value is set to 10 ms to be safe.",
+                                        "id": "USB_HOST_SET_ADDR_RECOVERY_MS",
+                                        "name": "USB_HOST_SET_ADDR_RECOVERY_MS",
+                                        "range": null,
+                                        "title": "SetAddress() recovery time in ms",
+                                        "type": "int"
+                                    }
+                                ],
+                                "depends_on": "SOC_USB_OTG_SUPPORTED",
+                                "id": "component-config-usb-otg-hub-driver-configuration-root-port-configuration",
+                                "title": "Root Port configuration",
+                                "type": "menu"
+                            },
+                            {
+                                "children": [
+                                    {
+                                        "children": [],
+                                        "depends_on": "USB_HOST_HUBS_SUPPORTED && SOC_USB_OTG_SUPPORTED",
+                                        "help": "Enables support for connecting multiple Hubs simultaneously.",
+                                        "id": "USB_HOST_HUB_MULTI_LEVEL",
+                                        "name": "USB_HOST_HUB_MULTI_LEVEL",
+                                        "range": null,
+                                        "title": "Support multiple Hubs",
+                                        "type": "bool"
+                                    },
+                                    {
+                                        "children": [
+                                            {
+                                                "children": [],
+                                                "depends_on": "IDF_EXPERIMENTAL_FEATURES && USB_HOST_HUBS_SUPPORTED && SOC_USB_OTG_SUPPORTED",
+                                                "help": "Amount of attempts to reset the device.\n\nThe default value is 1.",
+                                                "id": "USB_HOST_EXT_PORT_RESET_ATTEMPTS",
+                                                "name": "USB_HOST_EXT_PORT_RESET_ATTEMPTS",
+                                                "range": null,
+                                                "title": null,
+                                                "type": "int"
+                                            },
+                                            {
+                                                "children": [],
+                                                "depends_on": "USB_HOST_HUBS_SUPPORTED && SOC_USB_OTG_SUPPORTED",
+                                                "help": "After a port stops driving the reset signal, the USB 2.0 specification requires that\nthe \"USB System Software guarantees a minimum of 10 ms for reset recovery\" before the\nattached device is expected to respond to data transfers (see USB 2.0 chapter 7.1.7.3 for\nmore details).\nThe device may ignore any data transfers during the recovery interval.\n\nThe default value is set to 30 ms to be safe.",
+                                                "id": "USB_HOST_EXT_PORT_RESET_RECOVERY_DELAY_MS",
+                                                "name": "USB_HOST_EXT_PORT_RESET_RECOVERY_DELAY_MS",
+                                                "range": null,
+                                                "title": "Reset recovery delay in ms",
+                                                "type": "int"
+                                            },
+                                            {
+                                                "children": [
+                                                    {
+                                                        "children": [],
+                                                        "depends_on": "USB_HOST_EXT_PORT_CUSTOM_POWER_ON_DELAY_ENABLE && USB_HOST_HUBS_SUPPORTED && SOC_USB_OTG_SUPPORTED",
+                                                        "help": "Custom value of delay from the time the power-on sequence begins on a port\nuntil power is good on that port.\nValue 0 is used for a hub with no power switches.\n\nThe default value is 100 ms.",
+                                                        "id": "USB_HOST_EXT_PORT_CUSTOM_POWER_ON_DELAY_MS",
+                                                        "name": "USB_HOST_EXT_PORT_CUSTOM_POWER_ON_DELAY_MS",
+                                                        "range": null,
+                                                        "title": "PwrOn2PwrGood delay in ms",
+                                                        "type": "int"
+                                                    }
+                                                ],
+                                                "depends_on": "USB_HOST_HUBS_SUPPORTED && SOC_USB_OTG_SUPPORTED",
+                                                "help": "Enables the possibility to configure custom time for the power-on sequence on a port\nuntil power is good on that port.\n\nWhen enabled, applies the custom PwrOn2PwrGood delay.\nWhen disabled, applies the PwrOn2PwrGood value from the Hub Descriptor.",
+                                                "id": "USB_HOST_EXT_PORT_CUSTOM_POWER_ON_DELAY_ENABLE",
+                                                "name": "USB_HOST_EXT_PORT_CUSTOM_POWER_ON_DELAY_ENABLE",
+                                                "range": null,
+                                                "title": "Custom bPwrOn2PwrGood value",
+                                                "type": "bool"
+                                            }
+                                        ],
+                                        "depends_on": "USB_HOST_HUBS_SUPPORTED && SOC_USB_OTG_SUPPORTED",
+                                        "id": "component-config-usb-otg-hub-driver-configuration-support-hubs-downstream-port-configuration",
+                                        "title": "Downstream Port configuration",
+                                        "type": "menu"
+                                    }
+                                ],
+                                "depends_on": "SOC_USB_OTG_SUPPORTED",
+                                "help": "Enables support of external Hubs.",
+                                "id": "USB_HOST_HUBS_SUPPORTED",
+                                "name": "USB_HOST_HUBS_SUPPORTED",
+                                "range": null,
+                                "title": "Support Hubs",
+                                "type": "bool"
+                            }
+                        ],
+                        "depends_on": "SOC_USB_OTG_SUPPORTED",
+                        "id": "component-config-usb-otg-hub-driver-configuration",
+                        "title": "Hub Driver Configuration",
+                        "type": "menu"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": "SOC_USB_OTG_SUPPORTED",
+                        "help": "The enumeration filter callback is called before enumeration of each newly attached device.\nThis callback allows users to control whether a device should be enumerated, and what configuration\nnumber to use when enumerating a device.\n\nIf enabled, the enumeration filter callback can be set via 'usb_host_config_t' when calling\n'usb_host_install()'.",
+                        "id": "USB_HOST_ENABLE_ENUM_FILTER_CALLBACK",
+                        "name": "USB_HOST_ENABLE_ENUM_FILTER_CALLBACK",
+                        "range": null,
+                        "title": "Enable enumeration filter callback",
+                        "type": "bool"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": "IDF_TARGET_ESP32P4 && SPIRAM && SOC_USB_OTG_SUPPORTED",
+                        "help": "In the ESP32P4, the USB-DWC internal DMA can access external RAM. Enabling this configuration can save\ninternal RAM by allocating the memory buffers used by the USB-DWC peripheral's DMA to external RAM.\nHowever, it introduces minor performance degradation due to the overhead of accessing external RAM.",
+                        "id": "USB_HOST_DWC_DMA_CAP_MEMORY_IN_PSRAM",
+                        "name": "USB_HOST_DWC_DMA_CAP_MEMORY_IN_PSRAM",
+                        "range": null,
+                        "title": "Allocate USB_DWC DMA capable memory in PSRAM",
+                        "type": "bool"
+                    },
+                    {
+                        "children": [],
+                        "depends_on": "SOC_USB_OTG_SUPPORTED",
+                        "help": null,
+                        "id": "USB_OTG_SUPPORTED",
+                        "name": "USB_OTG_SUPPORTED",
+                        "range": null,
+                        "title": null,
+                        "type": "bool"
+                    }
+                ],
+                "depends_on": "SOC_USB_OTG_SUPPORTED",
+                "id": "component-config-usb-otg",
+                "title": "USB-OTG",
+                "type": "menu"
+            },
+            {
+                "children": [
+                    {
+                        "children": [],
                         "depends_on": null,
                         "help": null,
                         "id": "ESP_LCD_TOUCH_MAX_POINTS",

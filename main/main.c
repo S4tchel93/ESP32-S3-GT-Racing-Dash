@@ -29,7 +29,6 @@ static const char *TAG = "example";
 
 // LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
-
 static _lock_t simhub_data_lock;
 
 static void example_lvgl_port_task(void *arg)
@@ -95,7 +94,39 @@ static void search_until(uint8_t* in_buf, uint8_t start_idx, uint8_t* out_len, c
     //printf("Out length %d\n", count);
 }
 
-static void echo_task(void *arg)
+
+void read_until_delimiter(char*out_data, int* length)
+{
+    uint32_t index = 0;
+    char data[BUF_SIZE];
+
+    while(1)
+    {
+        int len = usb_serial_jtag_read_bytes(&data[index], 1,  5 / portTICK_PERIOD_MS);
+        if(len > 0)
+        {
+            if(data[index] != ';')
+            {
+                //printf("RX char: %c \n", data[index]);
+                out_data[index] = (char)data[index];
+                index++;
+            }
+            else
+            {
+                data[index] = '\0';
+                break;
+            }  
+        }
+        else
+        {
+            break;
+        }      
+    }
+    *length = index;
+}
+
+
+void app_main(void)
 {
     // Configure USB SERIAL JTAG
     usb_serial_jtag_driver_config_t usb_serial_jtag_config = {
@@ -106,72 +137,6 @@ static void echo_task(void *arg)
     ESP_ERROR_CHECK(usb_serial_jtag_driver_install(&usb_serial_jtag_config));
     ESP_LOGI("usb_serial_jtag", "USB_SERIAL_JTAG init done");
 
-    // Configure a temporary buffer for the incoming data
-    uint8_t *data = (uint8_t *) malloc(BUF_SIZE);
-    if (data == NULL) {
-        ESP_LOGE("usb_serial_jtag", "no memory for data");
-        return;
-    }
-
-    while (1) {
-        int len = usb_serial_jtag_read_bytes(data, (BUF_SIZE - 1), 20 / portTICK_PERIOD_MS);
-        
-        static char* curr_gear = "N";
-        static char curr_speed[4] = "0";
-        static char current_time[9] = "00:00.00";
-        static char last_time[9] = "00:00.00";
-        static char best_time[9] = "00:00.00";
-        static char delta_time[7] = "+0.000";
-
-        if(len)
-        {   
-            uint8_t str_len = 0;
-            uint8_t index = 0;
-            //For Speed finding
-            //printf("gear Start index %d\n", index);
-            search_until(data, index, &str_len, curr_gear);
-            index += str_len;
-
-            printf("Speed Start index %d\n", index);
-            search_until(data, ++index, &str_len, curr_speed);
-            index += str_len;
-
-            printf("current_time Start index %d\n", index);
-            search_until(data, ++index , &str_len, current_time);
-            index += str_len;
-            search_until(data, ++index, &str_len, last_time);
-            index += str_len;
-            search_until(data, ++index, &str_len, best_time);
-            index += str_len;
-            search_until(data, ++index, &str_len, delta_time);
-            //printf("Count %d\n", count); 
-            //printf("Speed"); 
-            //for(int i = 0; i<count; i++)
-            //{
-            //    printf("%c", data[2+i]); 
-            //}
-            //printf("\n");
-            //printf("Gear %s\n", curr_gear);
-            //printf("Speed %s\n", curr_speed);
-            
-            //memcpy(curr_speed, (uint8_t *)data[2], count);
-            //memcpy(curr_gear, (char*)data, 1);
-            //printf("New Gear\n");
-            _lock_acquire(&lvgl_api_lock);
-            lv_label_set_text(objects.gear_value, curr_gear);
-            lv_label_set_text(objects.speed_value, curr_speed);
-            lv_label_set_text(objects.estimated_lap_value, current_time);
-            lv_label_set_text(objects.last_lap_value, last_time);
-            lv_label_set_text(objects.best_lap_value, best_time);
-            lv_label_set_text(objects.lap_delta_value, delta_time);
-            _lock_release(&lvgl_api_lock);
-        }
-        vTaskDelay(10/portTICK_PERIOD_MS);
-    }
-}
-
-void app_main(void)
-{
     ESP_LOGI(TAG, "Install RGB LCD panel driver");
     esp_lcd_panel_handle_t* panel_handle_p = st7262_lcd_init();
     esp_lcd_panel_handle_t panel_handle = *panel_handle_p;
@@ -189,7 +154,7 @@ void app_main(void)
     
     /* Register a touchpad input device */
     lv_indev_t *indev = lv_indev_create(); 
-        lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER); // Set the input device type
+    lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER); // Set the input device type
     lv_indev_set_read_cb(indev, touchpad_read); // Set the read callback function
     lv_indev_set_driver_data(indev, tp_handle); // Set driver data to the touch panel handle
 
@@ -235,7 +200,7 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, EXAMPLE_LVGL_TICK_PERIOD_MS * 1000));
 
     ESP_LOGI(TAG, "Create LVGL task");
-    xTaskCreatePinnedToCore(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL, 0);
+    xTaskCreate(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
 
     ESP_LOGI(TAG, "Display LVGL UI");
     // Lock the mutex due to the LVGL APIs are not thread-safe
@@ -243,6 +208,39 @@ void app_main(void)
     ui_init();
     _lock_release(&lvgl_api_lock);
 
-    xTaskCreatePinnedToCore(echo_task, "USB SERIAL JTAG_echo_task", ECHO_TASK_STACK_SIZE, NULL, 10, NULL, 1);
     
+
+    while (1) 
+    {
+        int len_gear = 0;
+        int len_speed = 0;
+        int len;
+        char curr_gear[2] = "N";
+        char curr_speed[4] = "0";
+        char current_time[9] = "00:00.00";
+        char last_time[9] = "00:00.00";
+        char best_time[9] = "00:00.00";
+        char delta_time[7] = "+0.000";
+
+        read_until_delimiter(curr_gear, &len_gear);
+        if(len_gear > 0)
+        {
+            read_until_delimiter(curr_speed, &len_speed);
+            read_until_delimiter(current_time, &len);
+            read_until_delimiter(last_time, &len);
+            read_until_delimiter(best_time, &len);
+            read_until_delimiter(delta_time, &len);
+
+            _lock_acquire(&lvgl_api_lock);
+            lv_label_set_text(objects.gear_value, curr_gear);
+            lv_label_set_text(objects.speed_value, curr_speed);
+            lv_label_set_text(objects.estimated_lap_value, current_time);
+            lv_label_set_text(objects.last_lap_value, last_time);
+            lv_label_set_text(objects.best_lap_value, best_time);
+            lv_label_set_text(objects.lap_delta_value, delta_time);
+            _lock_release(&lvgl_api_lock);
+        }
+        
+        vTaskDelay(10/portTICK_PERIOD_MS);
+    }
 }

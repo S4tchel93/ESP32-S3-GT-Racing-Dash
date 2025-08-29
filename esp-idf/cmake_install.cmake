@@ -194,6 +194,11 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("H:/development/rgb_panel/esp-idf/usb/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("H:/development/rgb_panel/esp-idf/esp_ringbuf/cmake_install.cmake")
 endif()
 
