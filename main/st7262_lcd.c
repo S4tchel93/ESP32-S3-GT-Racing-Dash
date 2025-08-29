@@ -13,7 +13,7 @@ esp_lcd_panel_handle_t* st7262_lcd_init(void)
     static esp_lcd_rgb_panel_config_t panel_config = {
         .data_width = EXAMPLE_DATA_BUS_WIDTH,
         .dma_burst_size = 64,
-        .num_fbs = EXAMPLE_LCD_NUM_FB,
+        .num_fbs = 2,
 #if CONFIG_EXAMPLE_USE_BOUNCE_BUFFER
         .bounce_buffer_size_px = 20 * EXAMPLE_LCD_H_RES,
 #endif
