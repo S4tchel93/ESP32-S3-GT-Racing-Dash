@@ -125,6 +125,80 @@ void read_until_delimiter(char*out_data, int* length)
     *length = index;
 }
 
+static void simhub_task(void *arg)
+{
+    while (1) 
+    {
+        //uint32_t timestart = esp_timer_get_time();
+        //uint32_t readstart = 0;
+        //uint32_t readend = 0;
+        //uint32_t updatestart = 0;
+        //uint32_t updateend = 0;
+
+        int len_gear = 0;
+        int len_speed = 0;
+        int len;
+        char curr_gear[2] = "N";
+        char curr_speed[4] = "0";
+        char current_time[9] = "00:00.00";
+        char last_time[9] = "00:00.00";
+        char best_time[9] = "00:00.00";
+        char delta_time[7] = "+0.000";
+        char fl_wear[6] = "";
+        char fr_wear[6] = "";
+        char rl_wear[6] = "";
+        char rr_wear[6] = "";
+        char fl_tire_temp[6] = "";
+        char fr_tire_temp[6] = "";
+        char rl_tire_temp[6] = "";
+        char rr_tire_temp[6] = "";
+        read_until_delimiter(curr_gear, &len_gear);
+        if(len_gear > 0)
+        {   
+            //readstart = esp_timer_get_time();
+            read_until_delimiter(curr_speed, &len_speed);
+            read_until_delimiter(current_time, &len);
+            read_until_delimiter(last_time, &len);
+            read_until_delimiter(best_time, &len);
+            read_until_delimiter(delta_time, &len);
+            read_until_delimiter(fl_wear, &len);
+            read_until_delimiter(fr_wear, &len);
+            read_until_delimiter(rl_wear, &len);
+            read_until_delimiter(rr_wear, &len);
+            read_until_delimiter(fl_tire_temp, &len);
+            read_until_delimiter(fr_tire_temp, &len);
+            read_until_delimiter(rl_tire_temp, &len);
+            read_until_delimiter(rr_tire_temp, &len);
+            //readend = esp_timer_get_time();
+
+            //updatestart = esp_timer_get_time();
+            _lock_acquire(&lvgl_api_lock);
+            lv_label_set_text(objects.gear_value, curr_gear);
+            lv_label_set_text(objects.speed_value, curr_speed);
+            lv_label_set_text(objects.estimated_lap_value, current_time);
+            lv_label_set_text(objects.last_lap_value, last_time);
+            lv_label_set_text(objects.best_lap_value, best_time);
+            lv_label_set_text(objects.lap_delta_value, delta_time);
+            lv_label_set_text(objects.fl_tire_wear, fl_wear);
+            lv_label_set_text(objects.fr_tire_wear, fr_wear);
+            lv_label_set_text(objects.rl_tire_wear, rl_wear);
+            lv_label_set_text(objects.rr_tire_wear, rr_wear);
+            lv_label_set_text(objects.fl_tire_temp, fl_tire_temp);
+            lv_label_set_text(objects.fr_tire_temp, fr_tire_temp);
+            lv_label_set_text(objects.rl_tire_temp, rl_tire_temp);
+            lv_label_set_text(objects.rr_tire_temp, rr_tire_temp);
+            _lock_release(&lvgl_api_lock);
+            //updateend = esp_timer_get_time();
+        }
+        //uint32_t timeend = esp_timer_get_time();
+        //printf("Reading Time: %ld \n", ((readend - readstart)/1000));
+        //printf("LVGL Update Time: %ld \n", ((updateend - updatestart)/1000));
+        //printf("Total Loop Time: %ld \n", ((timeend - timestart)/1000));
+        
+        vTaskDelay(10/portTICK_PERIOD_MS);
+    }
+}
+
 
 void app_main(void)
 {
@@ -200,7 +274,7 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, EXAMPLE_LVGL_TICK_PERIOD_MS * 1000));
 
     ESP_LOGI(TAG, "Create LVGL task");
-    xTaskCreate(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL);
+    xTaskCreatePinnedToCore(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL, 0);
 
     ESP_LOGI(TAG, "Display LVGL UI");
     // Lock the mutex due to the LVGL APIs are not thread-safe
@@ -208,76 +282,6 @@ void app_main(void)
     ui_init();
     _lock_release(&lvgl_api_lock);
 
-    
-
-    while (1) 
-    {
-        //uint32_t timestart = esp_timer_get_time();
-        //uint32_t readstart = 0;
-        //uint32_t readend = 0;
-        //uint32_t updatestart = 0;
-        //uint32_t updateend = 0;
-
-        int len_gear = 0;
-        int len_speed = 0;
-        int len;
-        char curr_gear[2] = "N";
-        char curr_speed[4] = "0";
-        char current_time[9] = "00:00.00";
-        char last_time[9] = "00:00.00";
-        char best_time[9] = "00:00.00";
-        char delta_time[7] = "+0.000";
-        char fl_wear[6] = "";
-        char fr_wear[6] = "";
-        char rl_wear[6] = "";
-        char rr_wear[6] = "";
-        char fl_tire_temp[6] = "";
-        char fr_tire_temp[6] = "";
-        char rl_tire_temp[6] = "";
-        char rr_tire_temp[6] = "";
-        read_until_delimiter(curr_gear, &len_gear);
-        if(len_gear > 0)
-        {   
-            //readstart = esp_timer_get_time();
-            read_until_delimiter(curr_speed, &len_speed);
-            read_until_delimiter(current_time, &len);
-            read_until_delimiter(last_time, &len);
-            read_until_delimiter(best_time, &len);
-            read_until_delimiter(delta_time, &len);
-            read_until_delimiter(fl_wear, &len);
-            read_until_delimiter(fr_wear, &len);
-            read_until_delimiter(rl_wear, &len);
-            read_until_delimiter(rr_wear, &len);
-            read_until_delimiter(fl_tire_temp, &len);
-            read_until_delimiter(fr_tire_temp, &len);
-            read_until_delimiter(rl_tire_temp, &len);
-            read_until_delimiter(rr_tire_temp, &len);
-            //readend = esp_timer_get_time();
-
-            //updatestart = esp_timer_get_time();
-            _lock_acquire(&lvgl_api_lock);
-            lv_label_set_text(objects.gear_value, curr_gear);
-            lv_label_set_text(objects.speed_value, curr_speed);
-            lv_label_set_text(objects.estimated_lap_value, current_time);
-            lv_label_set_text(objects.last_lap_value, last_time);
-            lv_label_set_text(objects.best_lap_value, best_time);
-            lv_label_set_text(objects.lap_delta_value, delta_time);
-            lv_label_set_text(objects.fl_tire_wear, fl_wear);
-            lv_label_set_text(objects.fr_tire_wear, fr_wear);
-            lv_label_set_text(objects.rl_tire_wear, rl_wear);
-            lv_label_set_text(objects.rr_tire_wear, rr_wear);
-            lv_label_set_text(objects.fl_tire_temp, fl_tire_temp);
-            lv_label_set_text(objects.fr_tire_temp, fr_tire_temp);
-            lv_label_set_text(objects.rl_tire_temp, rl_tire_temp);
-            lv_label_set_text(objects.rr_tire_temp, rr_tire_temp);
-            _lock_release(&lvgl_api_lock);
-            //updateend = esp_timer_get_time();
-        }
-        //uint32_t timeend = esp_timer_get_time();
-        //printf("Reading Time: %ld \n", ((readend - readstart)/1000));
-        //printf("LVGL Update Time: %ld \n", ((updateend - updatestart)/1000));
-        //printf("Total Loop Time: %ld \n", ((timeend - timestart)/1000));
-        
-        vTaskDelay(10/portTICK_PERIOD_MS);
-    }
+    ESP_LOGI(TAG, "Create SimHub task");
+    xTaskCreatePinnedToCore(simhub_task, "SimHub", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL, 1);
 }
