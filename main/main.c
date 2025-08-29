@@ -221,6 +221,10 @@ void app_main(void)
         char last_time[9] = "00:00.00";
         char best_time[9] = "00:00.00";
         char delta_time[7] = "+0.000";
+        char fl_wear[6] = "";
+        char fr_wear[6] = "";
+        char rl_wear[6] = "";
+        char rr_wear[6] = "";
 
         read_until_delimiter(curr_gear, &len_gear);
         if(len_gear > 0)
@@ -230,6 +234,10 @@ void app_main(void)
             read_until_delimiter(last_time, &len);
             read_until_delimiter(best_time, &len);
             read_until_delimiter(delta_time, &len);
+            read_until_delimiter(fl_wear, &len);
+            read_until_delimiter(fr_wear, &len);
+            read_until_delimiter(rl_wear, &len);
+            read_until_delimiter(rr_wear, &len);
 
             _lock_acquire(&lvgl_api_lock);
             lv_label_set_text(objects.gear_value, curr_gear);
@@ -238,6 +246,10 @@ void app_main(void)
             lv_label_set_text(objects.last_lap_value, last_time);
             lv_label_set_text(objects.best_lap_value, best_time);
             lv_label_set_text(objects.lap_delta_value, delta_time);
+            lv_label_set_text(objects.fl_tire_wear, fl_wear);
+            lv_label_set_text(objects.fr_tire_wear, fr_wear);
+            lv_label_set_text(objects.rl_tire_wear, rl_wear);
+            lv_label_set_text(objects.rr_tire_wear, rr_wear);
             _lock_release(&lvgl_api_lock);
         }
         
