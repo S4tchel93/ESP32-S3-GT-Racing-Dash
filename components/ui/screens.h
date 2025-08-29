@@ -115,6 +115,11 @@ void tick_screen(int screen_index);
 
 void create_screens();
 
+#define GREEN_COLOR (0xff00ff1b)
+#define YELLOW_COLOR (0xfff7ff00)
+#define RED_COLOR (0xffff0000)
+#define BLUE_COLOR (0xff00afff)
+#define WHITE_COLOR (0xffffffff)
 
 #ifdef __cplusplus
 }

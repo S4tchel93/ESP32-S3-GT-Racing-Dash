@@ -125,6 +125,259 @@ void read_until_delimiter(char*out_data, int* length)
     *length = index;
 }
 
+static long map(long x, long in_min, long in_max, long out_min, long out_max)
+{
+  return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+static void process_rpm_leds(char* rpm, char* redline_threshold)
+{
+    uint16_t rpm_val = atoi(rpm);
+    uint16_t redline = atoi(redline_threshold);
+    int led_val = 0;
+
+    //Green LEDs
+    if(rpm_val <= 10)
+    {
+        led_val = map(rpm_val, 0, 10, 0, 255);
+        lv_led_set_color(objects.rpm_led_1, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_1, led_val);
+
+        // Be sure to reset the other ones
+        lv_led_set_color(objects.rpm_led_2, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_2, 0);
+        lv_led_set_color(objects.rpm_led_3, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_3, 0);
+        lv_led_set_color(objects.rpm_led_4, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_4, 0);
+        lv_led_set_color(objects.rpm_led_5, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_5, 0);
+        lv_led_set_color(objects.rpm_led_6, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_6, 0);
+        lv_led_set_color(objects.rpm_led_7, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_7, 0);
+        lv_led_set_color(objects.rpm_led_8, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_8, 0);
+        lv_led_set_color(objects.rpm_led_9, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_9, 0);
+    }
+    else if(rpm_val > 10 && rpm_val <= 20)
+    {
+        led_val = map(rpm_val, 11, 20, 0, 255);
+        lv_led_set_color(objects.rpm_led_2, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_3, led_val);
+
+        // Be sure to reset the other ones
+        lv_led_set_color(objects.rpm_led_1, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_1, 255);
+        lv_led_set_color(objects.rpm_led_3, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_3, 0);
+        lv_led_set_color(objects.rpm_led_4, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_4, 0);
+        lv_led_set_color(objects.rpm_led_5, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_5, 0);
+        lv_led_set_color(objects.rpm_led_6, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_6, 0);
+        lv_led_set_color(objects.rpm_led_7, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_7, 0);
+        lv_led_set_color(objects.rpm_led_8, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_8, 0);
+        lv_led_set_color(objects.rpm_led_9, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_9, 0);
+    }
+    else if(rpm_val > 20 && rpm_val <= 30)
+    {
+        led_val = map(rpm_val, 21, 30, 0, 255);
+        lv_led_set_color(objects.rpm_led_3, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_3, led_val);
+
+        // Be sure to reset the other ones
+        lv_led_set_color(objects.rpm_led_1, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_1, 255);
+        lv_led_set_color(objects.rpm_led_2, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_2, 255);
+        lv_led_set_color(objects.rpm_led_4, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_4, 0);
+        lv_led_set_color(objects.rpm_led_5, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_5, 0);
+        lv_led_set_color(objects.rpm_led_6, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_6, 0);
+        lv_led_set_color(objects.rpm_led_7, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_7, 0);
+        lv_led_set_color(objects.rpm_led_8, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_8, 0);
+        lv_led_set_color(objects.rpm_led_9, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_9, 0);
+    }
+    //Yellow LEDs
+    else if(rpm_val > 30 && rpm_val <= 40)
+    {
+        led_val = map(rpm_val, 31, 40, 0, 255);
+        lv_led_set_color(objects.rpm_led_4, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_4, led_val);
+
+        // Be sure to reset the other ones
+        lv_led_set_color(objects.rpm_led_1, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_1, 255);
+        lv_led_set_color(objects.rpm_led_2, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_2, 255);
+        lv_led_set_color(objects.rpm_led_3, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_3, 255);
+        lv_led_set_color(objects.rpm_led_5, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_5, 0);
+        lv_led_set_color(objects.rpm_led_6, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_6, 0);
+        lv_led_set_color(objects.rpm_led_7, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_7, 0);
+        lv_led_set_color(objects.rpm_led_8, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_8, 0);
+        lv_led_set_color(objects.rpm_led_9, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_9, 0);
+    }
+    else if(rpm_val > 40 && rpm_val <= 50)
+    {
+        led_val = map(rpm_val, 41, 50, 0, 255);
+        lv_led_set_color(objects.rpm_led_5, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_5, led_val);
+
+        // Be sure to reset the other ones
+        lv_led_set_color(objects.rpm_led_1, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_1, 255);
+        lv_led_set_color(objects.rpm_led_2, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_2, 255);
+        lv_led_set_color(objects.rpm_led_3, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_3, 255);
+        lv_led_set_color(objects.rpm_led_4, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_4, 255);
+        lv_led_set_color(objects.rpm_led_6, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_6, 0);
+        lv_led_set_color(objects.rpm_led_7, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_7, 0);
+        lv_led_set_color(objects.rpm_led_8, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_8, 0);
+        lv_led_set_color(objects.rpm_led_9, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_9, 0);
+    }
+    else if(rpm_val > 50 && rpm_val <= 60)
+    {
+        led_val = map(rpm_val, 51, 60, 0, 255);
+        lv_led_set_color(objects.rpm_led_6, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_6, led_val);
+
+        // Be sure to reset the other ones
+        lv_led_set_color(objects.rpm_led_1, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_1, 255);
+        lv_led_set_color(objects.rpm_led_2, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_2, 255);
+        lv_led_set_color(objects.rpm_led_3, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_3, 255);
+        lv_led_set_color(objects.rpm_led_4, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_4, 255);
+        lv_led_set_color(objects.rpm_led_5, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_5, 255);
+        lv_led_set_color(objects.rpm_led_7, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_7, 0);
+        lv_led_set_color(objects.rpm_led_8, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_8, 0);
+        lv_led_set_color(objects.rpm_led_9, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_9, 0);
+    }
+    // RED LEDs
+    else if(rpm_val > 60 && rpm_val <= 70)
+    {
+        led_val = map(rpm_val, 61, 70, 0, 255);
+        lv_led_set_color(objects.rpm_led_7, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_7, led_val);
+
+        // Be sure to reset the other ones
+        lv_led_set_color(objects.rpm_led_1, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_1, 255);
+        lv_led_set_color(objects.rpm_led_2, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_2, 255);
+        lv_led_set_color(objects.rpm_led_3, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_3, 255);
+        lv_led_set_color(objects.rpm_led_4, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_4, 255);
+        lv_led_set_color(objects.rpm_led_5, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_5, 255);
+        lv_led_set_color(objects.rpm_led_6, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_6, 255);
+        lv_led_set_color(objects.rpm_led_8, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_8, 0);
+        lv_led_set_color(objects.rpm_led_9, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_9, 0);
+    }
+    else if(rpm_val > 70 && rpm_val <= 80)
+    {
+        led_val = map(rpm_val, 71, 80, 0, 255);
+        lv_led_set_color(objects.rpm_led_8, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_8, led_val);
+        
+        // Be sure to reset the other ones
+        lv_led_set_color(objects.rpm_led_1, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_1, 255);
+        lv_led_set_color(objects.rpm_led_2, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_2, 255);
+        lv_led_set_color(objects.rpm_led_3, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_3, 255);
+        lv_led_set_color(objects.rpm_led_4, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_4, 255);
+        lv_led_set_color(objects.rpm_led_5, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_5, 255);
+        lv_led_set_color(objects.rpm_led_6, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_6, 255);
+        lv_led_set_color(objects.rpm_led_7, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_7, 255);
+        lv_led_set_color(objects.rpm_led_9, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_9, 0);
+    }
+    else if(rpm_val > 80 && rpm_val <= redline)
+    {
+        led_val = map(rpm_val, 81, redline, 0, 255);
+        lv_led_set_color(objects.rpm_led_9, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_9, led_val);
+
+        // Be sure to reset the other ones
+        lv_led_set_color(objects.rpm_led_1, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_1, 255);
+        lv_led_set_color(objects.rpm_led_2, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_2, 255);
+        lv_led_set_color(objects.rpm_led_3, lv_color_hex(GREEN_COLOR));
+        lv_led_set_brightness(objects.rpm_led_3, 255);
+        lv_led_set_color(objects.rpm_led_4, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_4, 255);
+        lv_led_set_color(objects.rpm_led_5, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_5, 255);
+        lv_led_set_color(objects.rpm_led_6, lv_color_hex(YELLOW_COLOR));
+        lv_led_set_brightness(objects.rpm_led_6, 255);
+        lv_led_set_color(objects.rpm_led_7, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_7, 255);
+        lv_led_set_color(objects.rpm_led_8, lv_color_hex(RED_COLOR));
+        lv_led_set_brightness(objects.rpm_led_8, 255);
+    }
+    else
+    {   
+        lv_led_set_color(objects.rpm_led_1, lv_color_hex(BLUE_COLOR));
+        lv_led_set_brightness(objects.rpm_led_1, 255);
+        lv_led_set_color(objects.rpm_led_2, lv_color_hex(BLUE_COLOR));
+        lv_led_set_brightness(objects.rpm_led_2, 255);
+        lv_led_set_color(objects.rpm_led_3, lv_color_hex(BLUE_COLOR));
+        lv_led_set_brightness(objects.rpm_led_3, 255);
+        lv_led_set_color(objects.rpm_led_4, lv_color_hex(BLUE_COLOR));
+        lv_led_set_brightness(objects.rpm_led_4, 255);
+        lv_led_set_color(objects.rpm_led_5, lv_color_hex(BLUE_COLOR));
+        lv_led_set_brightness(objects.rpm_led_5, 255);
+        lv_led_set_color(objects.rpm_led_6, lv_color_hex(BLUE_COLOR));
+        lv_led_set_brightness(objects.rpm_led_6, 255);
+        lv_led_set_color(objects.rpm_led_7, lv_color_hex(BLUE_COLOR));
+        lv_led_set_brightness(objects.rpm_led_7, 255);
+        lv_led_set_color(objects.rpm_led_8, lv_color_hex(BLUE_COLOR));
+        lv_led_set_brightness(objects.rpm_led_8, 255);
+        lv_led_set_color(objects.rpm_led_9, lv_color_hex(BLUE_COLOR));
+        lv_led_set_brightness(objects.rpm_led_9, 255);
+    }
+}
+
 static void simhub_task(void *arg)
 {
     while (1) 
@@ -140,6 +393,8 @@ static void simhub_task(void *arg)
         int len;
         char curr_gear[2] = "N";
         char curr_speed[4] = "0";
+        char rpm_percent[4] = "";
+        char rpm_redline_threshold[4] = "";
         char current_time[9] = "00:00.00";
         char last_time[9] = "00:00.00";
         char best_time[9] = "00:00.00";
@@ -157,6 +412,8 @@ static void simhub_task(void *arg)
         {   
             //readstart = esp_timer_get_time();
             read_until_delimiter(curr_speed, &len_speed);
+            read_until_delimiter(rpm_percent, &len);
+            read_until_delimiter(rpm_redline_threshold, &len);
             read_until_delimiter(current_time, &len);
             read_until_delimiter(last_time, &len);
             read_until_delimiter(best_time, &len);
@@ -175,6 +432,7 @@ static void simhub_task(void *arg)
             _lock_acquire(&lvgl_api_lock);
             lv_label_set_text(objects.gear_value, curr_gear);
             lv_label_set_text(objects.speed_value, curr_speed);
+            process_rpm_leds(rpm_percent, rpm_redline_threshold);
             lv_label_set_text(objects.estimated_lap_value, current_time);
             lv_label_set_text(objects.last_lap_value, last_time);
             lv_label_set_text(objects.best_lap_value, best_time);
@@ -195,7 +453,7 @@ static void simhub_task(void *arg)
         //printf("LVGL Update Time: %ld \n", ((updateend - updatestart)/1000));
         //printf("Total Loop Time: %ld \n", ((timeend - timestart)/1000));
         
-        vTaskDelay(10/portTICK_PERIOD_MS);
+        vTaskDelay(16/portTICK_PERIOD_MS);
     }
 }
 
