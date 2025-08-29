@@ -212,6 +212,12 @@ void app_main(void)
 
     while (1) 
     {
+        //uint32_t timestart = esp_timer_get_time();
+        //uint32_t readstart = 0;
+        //uint32_t readend = 0;
+        //uint32_t updatestart = 0;
+        //uint32_t updateend = 0;
+
         int len_gear = 0;
         int len_speed = 0;
         int len;
@@ -225,10 +231,14 @@ void app_main(void)
         char fr_wear[6] = "";
         char rl_wear[6] = "";
         char rr_wear[6] = "";
-
+        char fl_tire_temp[6] = "";
+        char fr_tire_temp[6] = "";
+        char rl_tire_temp[6] = "";
+        char rr_tire_temp[6] = "";
         read_until_delimiter(curr_gear, &len_gear);
         if(len_gear > 0)
-        {
+        {   
+            //readstart = esp_timer_get_time();
             read_until_delimiter(curr_speed, &len_speed);
             read_until_delimiter(current_time, &len);
             read_until_delimiter(last_time, &len);
@@ -238,7 +248,13 @@ void app_main(void)
             read_until_delimiter(fr_wear, &len);
             read_until_delimiter(rl_wear, &len);
             read_until_delimiter(rr_wear, &len);
+            read_until_delimiter(fl_tire_temp, &len);
+            read_until_delimiter(fr_tire_temp, &len);
+            read_until_delimiter(rl_tire_temp, &len);
+            read_until_delimiter(rr_tire_temp, &len);
+            //readend = esp_timer_get_time();
 
+            //updatestart = esp_timer_get_time();
             _lock_acquire(&lvgl_api_lock);
             lv_label_set_text(objects.gear_value, curr_gear);
             lv_label_set_text(objects.speed_value, curr_speed);
@@ -250,8 +266,17 @@ void app_main(void)
             lv_label_set_text(objects.fr_tire_wear, fr_wear);
             lv_label_set_text(objects.rl_tire_wear, rl_wear);
             lv_label_set_text(objects.rr_tire_wear, rr_wear);
+            lv_label_set_text(objects.fl_tire_temp, fl_tire_temp);
+            lv_label_set_text(objects.fr_tire_temp, fr_tire_temp);
+            lv_label_set_text(objects.rl_tire_temp, rl_tire_temp);
+            lv_label_set_text(objects.rr_tire_temp, rr_tire_temp);
             _lock_release(&lvgl_api_lock);
+            //updateend = esp_timer_get_time();
         }
+        //uint32_t timeend = esp_timer_get_time();
+        //printf("Reading Time: %ld \n", ((readend - readstart)/1000));
+        //printf("LVGL Update Time: %ld \n", ((updateend - updatestart)/1000));
+        //printf("Total Loop Time: %ld \n", ((timeend - timestart)/1000));
         
         vTaskDelay(10/portTICK_PERIOD_MS);
     }
