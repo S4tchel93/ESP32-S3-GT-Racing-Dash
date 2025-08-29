@@ -301,78 +301,56 @@ static void simhub_task(void *arg)
     }
 }
 
-static void ui_update_task(void *arg)
-{
+typedef struct {
+    lv_obj_t *label;
+    const char *value;
+} ui_label_update_t;
+
+static void update_label_if_changed(lv_obj_t *label, const char *new_val) {
+    const char *old_val = lv_label_get_text(label);
+    if (strcmp(old_val, new_val) != 0) {
+        lv_label_set_text(label, new_val);
+    }
+}
+
+static void ui_apply_simhub_data(const simhub_data_t *data) {
+    ui_label_update_t updates[] = {
+        { objects.gear_value,        data->curr_gear },
+        { objects.speed_value,       data->curr_speed },
+        { objects.estimated_lap_value, data->current_time },
+        { objects.last_lap_value,    data->last_time },
+        { objects.best_lap_value,    data->best_time },
+        { objects.lap_delta_value,   data->delta_time },
+        { objects.fl_tire_wear,      data->fl_wear },
+        { objects.fr_tire_wear,      data->fr_wear },
+        { objects.rl_tire_wear,      data->rl_wear },
+        { objects.rr_tire_wear,      data->rr_wear },
+        { objects.fl_tire_temp,      data->fl_tire_temp },
+        { objects.fr_tire_temp,      data->fr_tire_temp },
+        { objects.rl_tire_temp,      data->rl_tire_temp },
+        { objects.rr_tire_temp,      data->rr_tire_temp },
+    };
+
+    for (size_t i = 0; i < sizeof(updates)/sizeof(updates[0]); i++) {
+        update_label_if_changed(updates[i].label, updates[i].value);
+    }
+
+    // RPM LEDs (special case)
+    process_rpm_leds(data->rpm_percent, data->rpm_redline_threshold);
+}
+
+static void ui_update_task(void *arg) {
     simhub_data_t simhub_data;
     init_rpm_leds();
-    
 
-    while(1)
-    {
-        BaseType_t  xStatus = xQueueReceive(xQueue, &simhub_data, portMAX_DELAY);
-
-        _lock_acquire(&lvgl_api_lock);
-        if(strcmp(lv_label_get_text(objects.gear_value), simhub_data.curr_gear) != 0)
-        {
-            lv_label_set_text(objects.gear_value, simhub_data.curr_gear);
+    while (1) {
+        if (xQueueReceive(xQueue, &simhub_data, portMAX_DELAY) == pdPASS) {
+            _lock_acquire(&lvgl_api_lock);
+            ui_apply_simhub_data(&simhub_data);
+            _lock_release(&lvgl_api_lock);
         }
-        if(strcmp(lv_label_get_text(objects.speed_value), simhub_data.curr_speed) != 0)
-        {
-            lv_label_set_text(objects.speed_value, simhub_data.curr_speed);
-        }
-        process_rpm_leds(simhub_data.rpm_percent, simhub_data.rpm_redline_threshold);
-        if(strcmp(lv_label_get_text(objects.estimated_lap_value), simhub_data.current_time) != 0)
-        {
-            lv_label_set_text(objects.estimated_lap_value, simhub_data.current_time);
-        }
-        if(strcmp(lv_label_get_text(objects.last_lap_value), simhub_data.last_time) != 0)
-        {
-            lv_label_set_text(objects.last_lap_value, simhub_data.last_time);
-        }
-        if(strcmp(lv_label_get_text(objects.best_lap_value), simhub_data.best_time) != 0)
-        {
-            lv_label_set_text(objects.best_lap_value, simhub_data.best_time);
-        }
-        if(strcmp(lv_label_get_text(objects.lap_delta_value), simhub_data.delta_time) != 0)
-        {
-            lv_label_set_text(objects.lap_delta_value, simhub_data.delta_time);
-        }
-        if(strcmp(lv_label_get_text(objects.fl_tire_wear), simhub_data.fl_wear) != 0)
-        {
-            lv_label_set_text(objects.fl_tire_wear, simhub_data.fl_wear);
-        }
-        if(strcmp(lv_label_get_text(objects.fr_tire_wear), simhub_data.fr_wear) != 0)
-        {
-            lv_label_set_text(objects.fr_tire_wear, simhub_data.fr_wear);
-        }
-        if(strcmp(lv_label_get_text(objects.rl_tire_wear), simhub_data.rl_wear) != 0)
-        {
-            lv_label_set_text(objects.rl_tire_wear, simhub_data.rl_wear);
-        }
-        if(strcmp(lv_label_get_text(objects.rr_tire_wear), simhub_data.rr_wear) != 0)
-        {
-            lv_label_set_text(objects.rr_tire_wear, simhub_data.rr_wear);
-        }
-        if(strcmp(lv_label_get_text(objects.fl_tire_temp), simhub_data.fl_tire_temp) != 0)
-        {
-            lv_label_set_text(objects.fl_tire_temp, simhub_data.fl_tire_temp);
-        }
-        if(strcmp(lv_label_get_text(objects.fr_tire_temp), simhub_data.fr_tire_temp) != 0)
-        {
-            lv_label_set_text(objects.fr_tire_temp, simhub_data.fr_tire_temp);
-        }
-        if(strcmp(lv_label_get_text(objects.rl_tire_temp), simhub_data.rl_tire_temp) != 0)
-        {
-            lv_label_set_text(objects.rl_tire_temp, simhub_data.rl_tire_temp);
-        }
-        if(strcmp(lv_label_get_text(objects.rr_tire_temp), simhub_data.rr_tire_temp) != 0)
-        {
-            lv_label_set_text(objects.rr_tire_temp, simhub_data.rr_tire_temp);
-        }
-        _lock_release(&lvgl_api_lock);
-        
         taskYIELD();
-        //vTaskDelay(10/portTICK_PERIOD_MS);
+        // vTaskDelay(10 / portTICK_PERIOD_MS);  // optional throttle
     }
 }
 
