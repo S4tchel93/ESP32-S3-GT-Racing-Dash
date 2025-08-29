@@ -30,6 +30,27 @@ static const char *TAG = "example";
 // LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
 static _lock_t simhub_data_lock;
+QueueHandle_t xQueue;
+
+typedef struct simhub_data_t
+{
+    char curr_gear[2];
+    char curr_speed[4];
+    char rpm_percent[4];
+    char rpm_redline_threshold[4] ;
+    char current_time[9];
+    char last_time[9];
+    char best_time[9];
+    char delta_time[7];
+    char fl_wear[6];
+    char fr_wear[6];
+    char rl_wear[6];
+    char rr_wear[6];
+    char fl_tire_temp[6];
+    char fr_tire_temp[6];
+    char rl_tire_temp[6];
+    char rr_tire_temp[6];
+}simhub_data_t;
 
 static void example_lvgl_port_task(void *arg)
 {
@@ -382,78 +403,90 @@ static void simhub_task(void *arg)
 {
     while (1) 
     {
-        //uint32_t timestart = esp_timer_get_time();
-        //uint32_t readstart = 0;
-        //uint32_t readend = 0;
-        //uint32_t updatestart = 0;
-        //uint32_t updateend = 0;
+        uint32_t readstart = 0;
+        uint32_t readend = 0;
+
+        simhub_data_t simhub_data =
+        {
+            .curr_gear= "N",
+            .curr_speed= "0",
+            .rpm_percent = "0",
+            .rpm_redline_threshold= "95",
+            .current_time= "00:00.00",
+            .last_time= "00:00.00",
+            .best_time= "00:00.00",
+            .delta_time= "+0.000",
+            .fl_wear = "",
+            .fr_wear = "",
+            .rl_wear = "",
+            .rr_wear = "",
+            .fl_tire_temp = "",
+            .fr_tire_temp = "",
+            .rl_tire_temp = "",
+            .rr_tire_temp = "",
+        };
 
         int len_gear = 0;
         int len_speed = 0;
         int len;
-        char curr_gear[2] = "N";
-        char curr_speed[4] = "0";
-        char rpm_percent[4] = "";
-        char rpm_redline_threshold[4] = "";
-        char current_time[9] = "00:00.00";
-        char last_time[9] = "00:00.00";
-        char best_time[9] = "00:00.00";
-        char delta_time[7] = "+0.000";
-        char fl_wear[6] = "";
-        char fr_wear[6] = "";
-        char rl_wear[6] = "";
-        char rr_wear[6] = "";
-        char fl_tire_temp[6] = "";
-        char fr_tire_temp[6] = "";
-        char rl_tire_temp[6] = "";
-        char rr_tire_temp[6] = "";
-        read_until_delimiter(curr_gear, &len_gear);
+        
+        read_until_delimiter(simhub_data.curr_gear, &len_gear);
         if(len_gear > 0)
         {   
             //readstart = esp_timer_get_time();
-            read_until_delimiter(curr_speed, &len_speed);
-            read_until_delimiter(rpm_percent, &len);
-            read_until_delimiter(rpm_redline_threshold, &len);
-            read_until_delimiter(current_time, &len);
-            read_until_delimiter(last_time, &len);
-            read_until_delimiter(best_time, &len);
-            read_until_delimiter(delta_time, &len);
-            read_until_delimiter(fl_wear, &len);
-            read_until_delimiter(fr_wear, &len);
-            read_until_delimiter(rl_wear, &len);
-            read_until_delimiter(rr_wear, &len);
-            read_until_delimiter(fl_tire_temp, &len);
-            read_until_delimiter(fr_tire_temp, &len);
-            read_until_delimiter(rl_tire_temp, &len);
-            read_until_delimiter(rr_tire_temp, &len);
+            read_until_delimiter(simhub_data.curr_speed, &len_speed);
+            read_until_delimiter(simhub_data.rpm_percent, &len);
+            read_until_delimiter(simhub_data.rpm_redline_threshold, &len);
+            read_until_delimiter(simhub_data.current_time, &len);
+            read_until_delimiter(simhub_data.last_time, &len);
+            read_until_delimiter(simhub_data.best_time, &len);
+            read_until_delimiter(simhub_data.delta_time, &len);
+            read_until_delimiter(simhub_data.fl_wear, &len);
+            read_until_delimiter(simhub_data.fr_wear, &len);
+            read_until_delimiter(simhub_data.rl_wear, &len);
+            read_until_delimiter(simhub_data.rr_wear, &len);
+            read_until_delimiter(simhub_data.fl_tire_temp, &len);
+            read_until_delimiter(simhub_data.fr_tire_temp, &len);
+            read_until_delimiter(simhub_data.rl_tire_temp, &len);
+            read_until_delimiter(simhub_data.rr_tire_temp, &len);
             //readend = esp_timer_get_time();
 
-            //updatestart = esp_timer_get_time();
-            _lock_acquire(&lvgl_api_lock);
-            lv_label_set_text(objects.gear_value, curr_gear);
-            lv_label_set_text(objects.speed_value, curr_speed);
-            process_rpm_leds(rpm_percent, rpm_redline_threshold);
-            lv_label_set_text(objects.estimated_lap_value, current_time);
-            lv_label_set_text(objects.last_lap_value, last_time);
-            lv_label_set_text(objects.best_lap_value, best_time);
-            lv_label_set_text(objects.lap_delta_value, delta_time);
-            lv_label_set_text(objects.fl_tire_wear, fl_wear);
-            lv_label_set_text(objects.fr_tire_wear, fr_wear);
-            lv_label_set_text(objects.rl_tire_wear, rl_wear);
-            lv_label_set_text(objects.rr_tire_wear, rr_wear);
-            lv_label_set_text(objects.fl_tire_temp, fl_tire_temp);
-            lv_label_set_text(objects.fr_tire_temp, fr_tire_temp);
-            lv_label_set_text(objects.rl_tire_temp, rl_tire_temp);
-            lv_label_set_text(objects.rr_tire_temp, rr_tire_temp);
-            _lock_release(&lvgl_api_lock);
-            //updateend = esp_timer_get_time();
+            BaseType_t xStatus = xQueueSend(xQueue, &simhub_data, 10/portTICK_PERIOD_MS);
         }
-        //uint32_t timeend = esp_timer_get_time();
         //printf("Reading Time: %ld \n", ((readend - readstart)/1000));
-        //printf("LVGL Update Time: %ld \n", ((updateend - updatestart)/1000));
-        //printf("Total Loop Time: %ld \n", ((timeend - timestart)/1000));
         
         vTaskDelay(16/portTICK_PERIOD_MS);
+    }
+}
+
+static void ui_update_task(void *arg)
+{
+    simhub_data_t simhub_data;
+
+    while(1)
+    {
+        BaseType_t  xStatus = xQueueReceive(xQueue, &simhub_data, portMAX_DELAY);
+
+        _lock_acquire(&lvgl_api_lock);
+        lv_label_set_text(objects.gear_value, simhub_data.curr_gear);
+        lv_label_set_text(objects.speed_value, simhub_data.curr_speed);
+        process_rpm_leds(simhub_data.rpm_percent, simhub_data.rpm_redline_threshold);
+        lv_label_set_text(objects.estimated_lap_value, simhub_data.current_time);
+        lv_label_set_text(objects.last_lap_value, simhub_data.last_time);
+        lv_label_set_text(objects.best_lap_value, simhub_data.best_time);
+        lv_label_set_text(objects.lap_delta_value, simhub_data.delta_time);
+        lv_label_set_text(objects.fl_tire_wear, simhub_data.fl_wear);
+        lv_label_set_text(objects.fr_tire_wear, simhub_data.fr_wear);
+        lv_label_set_text(objects.rl_tire_wear, simhub_data.rl_wear);
+        lv_label_set_text(objects.rr_tire_wear, simhub_data.rr_wear);
+        lv_label_set_text(objects.fl_tire_temp, simhub_data.fl_tire_temp);
+        lv_label_set_text(objects.fr_tire_temp, simhub_data.fr_tire_temp);
+        lv_label_set_text(objects.rl_tire_temp, simhub_data.rl_tire_temp);
+        lv_label_set_text(objects.rr_tire_temp, simhub_data.rr_tire_temp);
+        _lock_release(&lvgl_api_lock);
+        
+        taskYIELD();
+        //vTaskDelay(10/portTICK_PERIOD_MS);
     }
 }
 
@@ -531,6 +564,9 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, EXAMPLE_LVGL_TICK_PERIOD_MS * 1000));
 
+    ESP_LOGI(TAG, "Create Queue for simhub and UI update tasks");
+    xQueue = xQueueCreate(5U, sizeof(simhub_data_t)); // QUEUE_LENGTH is the depth, DataType is the type of data to be sent
+
     ESP_LOGI(TAG, "Create LVGL task");
     xTaskCreatePinnedToCore(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL, 0);
 
@@ -541,5 +577,8 @@ void app_main(void)
     _lock_release(&lvgl_api_lock);
 
     ESP_LOGI(TAG, "Create SimHub task");
-    xTaskCreatePinnedToCore(simhub_task, "SimHub", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL, 1);
+    xTaskCreatePinnedToCore(simhub_task, "SimHub", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, 1, NULL, 1);
+
+    ESP_LOGI(TAG, "Create UI Update task");
+    xTaskCreatePinnedToCore(ui_update_task, "UI_Update", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, 3, NULL, 1);
 }
