@@ -31,6 +31,11 @@
     "esp_lcd_touch_gt911.h": "c",
     "gt911_touch.h": "c",
     "lvgl.h": "c",
-    "esp_assert.h": "c"
+    "esp_assert.h": "c",
+    "cstdint": "c",
+    "string": "c",
+    "string_view": "c",
+    "span": "c",
+    "chrono": "c"
   }
 }
