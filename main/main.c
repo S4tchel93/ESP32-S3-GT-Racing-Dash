@@ -115,37 +115,6 @@ static void search_until(uint8_t* in_buf, uint8_t start_idx, uint8_t* out_len, c
     //printf("Out length %d\n", count);
 }
 
-
-void read_until_delimiter(char*out_data, int* length)
-{
-    uint32_t index = 0;
-    char data[BUF_SIZE];
-
-    while(1)
-    {
-        int len = usb_serial_jtag_read_bytes(&data[index], 1,  5 / portTICK_PERIOD_MS);
-        if(len > 0)
-        {
-            if(data[index] != ';')
-            {
-                //printf("RX char: %c \n", data[index]);
-                out_data[index] = (char)data[index];
-                index++;
-            }
-            else
-            {
-                data[index] = '\0';
-                break;
-            }  
-        }
-        else
-        {
-            break;
-        }      
-    }
-    *length = index;
-}
-
 static long map(long x, long in_min, long in_max, long out_min, long out_max)
 {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
@@ -241,63 +210,110 @@ void init_rpm_leds(void) {
     }
 }
 
-static void simhub_task(void *arg)
-{
-    while (1) 
-    {
-        uint32_t readstart = 0;
-        uint32_t readend = 0;
+#define SIMHUB_SYNC "SH;"
+#define SIMHUB_MAX_FIELDS 16
 
-        simhub_data_t simhub_data =
-        {
-            .curr_gear= "N",
-            .curr_speed= "0",
-            .rpm_percent = "0",
-            .rpm_redline_threshold= "95",
-            .current_time= "00:00.00",
-            .last_time= "00:00.00",
-            .best_time= "00:00.00",
-            .delta_time= "+0.000",
-            .fl_wear = "",
-            .fr_wear = "",
-            .rl_wear = "",
-            .rr_wear = "",
-            .fl_tire_temp = "",
-            .fr_tire_temp = "",
-            .rl_tire_temp = "",
-            .rr_tire_temp = "",
+static bool wait_for_sync(void) {
+    const char *sync = SIMHUB_SYNC;
+    int sync_idx = 0;
+    char c;
+
+    while (1) {
+        if (usb_serial_jtag_read_bytes(&c, 1, portMAX_DELAY) > 0) {
+            if (c == sync[sync_idx]) {
+                sync_idx++;
+                if (sync[sync_idx] == '\0') {
+                    return true; // found "SH;"
+                }
+            } else {
+                sync_idx = (c == sync[0]) ? 1 : 0;
+            }
+        }
+    }
+    return false;
+}
+
+static void simhub_task(void *arg) {
+    char field_buf[32];   // temporary buffer for each field
+    int field_len = 0;
+
+    while (1) {
+        // Step 1: sync on "SH;"
+        if (!wait_for_sync()) continue;
+
+        simhub_data_t simhub_data = {0};  // zero initialize
+        char *dest_fields[SIMHUB_MAX_FIELDS] = {
+            simhub_data.curr_gear,
+            simhub_data.curr_speed,
+            simhub_data.rpm_percent,
+            simhub_data.rpm_redline_threshold,
+            simhub_data.current_time,
+            simhub_data.last_time,
+            simhub_data.best_time,
+            simhub_data.delta_time,
+            simhub_data.fl_wear,
+            simhub_data.fr_wear,
+            simhub_data.rl_wear,
+            simhub_data.rr_wear,
+            simhub_data.fl_tire_temp,
+            simhub_data.fr_tire_temp,
+            simhub_data.rl_tire_temp,
+            simhub_data.rr_tire_temp
+        };
+        size_t dest_sizes[SIMHUB_MAX_FIELDS] = {
+            sizeof(simhub_data.curr_gear),
+            sizeof(simhub_data.curr_speed),
+            sizeof(simhub_data.rpm_percent),
+            sizeof(simhub_data.rpm_redline_threshold),
+            sizeof(simhub_data.current_time),
+            sizeof(simhub_data.last_time),
+            sizeof(simhub_data.best_time),
+            sizeof(simhub_data.delta_time),
+            sizeof(simhub_data.fl_wear),
+            sizeof(simhub_data.fr_wear),
+            sizeof(simhub_data.rl_wear),
+            sizeof(simhub_data.rr_wear),
+            sizeof(simhub_data.fl_tire_temp),
+            sizeof(simhub_data.fr_tire_temp),
+            sizeof(simhub_data.rl_tire_temp),
+            sizeof(simhub_data.rr_tire_temp)
         };
 
-        int len_gear = 0;
-        int len_speed = 0;
-        int len;
-        
-        read_until_delimiter(simhub_data.curr_gear, &len_gear);
-        if(len_gear > 0)
-        {   
-            //readstart = esp_timer_get_time();
-            read_until_delimiter(simhub_data.curr_speed, &len_speed);
-            read_until_delimiter(simhub_data.rpm_percent, &len);
-            read_until_delimiter(simhub_data.rpm_redline_threshold, &len);
-            read_until_delimiter(simhub_data.current_time, &len);
-            read_until_delimiter(simhub_data.last_time, &len);
-            read_until_delimiter(simhub_data.best_time, &len);
-            read_until_delimiter(simhub_data.delta_time, &len);
-            read_until_delimiter(simhub_data.fl_wear, &len);
-            read_until_delimiter(simhub_data.fr_wear, &len);
-            read_until_delimiter(simhub_data.rl_wear, &len);
-            read_until_delimiter(simhub_data.rr_wear, &len);
-            read_until_delimiter(simhub_data.fl_tire_temp, &len);
-            read_until_delimiter(simhub_data.fr_tire_temp, &len);
-            read_until_delimiter(simhub_data.rl_tire_temp, &len);
-            read_until_delimiter(simhub_data.rr_tire_temp, &len);
-            //readend = esp_timer_get_time();
+        int field_idx = 0;
+        field_len = 0;
 
-            BaseType_t xStatus = xQueueSend(xQueue, &simhub_data, 10/portTICK_PERIOD_MS);
+        // Step 2: Read fields one by one until we have all expected fields
+        while (field_idx < SIMHUB_MAX_FIELDS) {
+        char c;
+        int len = usb_serial_jtag_read_bytes(&c, 1, 20 / portTICK_PERIOD_MS);
+        if (len <= 0) break; // timeout → drop packet
+
+        if (c == ';') {
+            // End of current field
+            field_buf[field_len] = '\0';
+
+            // Copy safely into struct field
+            strncpy(dest_fields[field_idx], field_buf, dest_sizes[field_idx] - 1);
+            dest_fields[field_idx][dest_sizes[field_idx] - 1] = '\0';
+
+            field_idx++;
+            field_len = 0;
+        } else {
+            // Only accept chars if they fit into the *target field*, not just field_buf
+            if (field_len < (int)dest_sizes[field_idx] - 1) {
+                field_buf[field_len++] = c;
+            }
+            // Else: discard extra chars for this field
         }
-        //printf("Reading Time: %ld \n", ((readend - readstart)/1000));
-        
-        vTaskDelay(16/portTICK_PERIOD_MS);
+    }
+
+        // Step 3: Only push if we got all fields
+        if (field_idx == SIMHUB_MAX_FIELDS) {
+            xQueueSend(xQueue, &simhub_data, 10 / portTICK_PERIOD_MS);
+        }
+
+        // ~60 Hz pacing
+        vTaskDelay(16 / portTICK_PERIOD_MS);
     }
 }
 
