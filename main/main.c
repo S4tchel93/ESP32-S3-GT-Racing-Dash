@@ -264,20 +264,20 @@ static void bind_simhub_fields(simhub_data_t *data) {
 }
 
 static bool parse_simhub_packet(simhub_data_t *out_data) {
-    char field_buf[64]; // temporary buffer for each field
-    size_t field_len = 0;
-    int field_idx = 0;
-
     bind_simhub_fields(out_data);
 
-    while (field_idx < (int)(sizeof(simhub_fields) / sizeof(simhub_fields[0]))) {
+    char field_buf[64];
+    size_t field_len = 0;
+    int field_idx = 0;
+    int total_fields = sizeof(simhub_fields) / sizeof(simhub_fields[0]);
+
+    while (field_idx < total_fields) {
         char c;
         int len = usb_serial_jtag_read_bytes(&c, 1, 20 / portTICK_PERIOD_MS);
-        if (len <= 0) return false; // timeout
+        if (len <= 0) return false;
 
         if (c == ';') {
             field_buf[field_len] = '\0';
-
             strncpy(simhub_fields[field_idx].dest, field_buf,
                     simhub_fields[field_idx].max_size - 1);
             simhub_fields[field_idx].dest[simhub_fields[field_idx].max_size - 1] = '\0';
