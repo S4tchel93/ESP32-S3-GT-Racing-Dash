@@ -24,6 +24,7 @@
 #include "lvgl_port.h"
 #include "driver/usb_serial_jtag.h"
 #include "screens.h"
+#include "user_colors.h"
 
 static const char *TAG = "example";
 
@@ -448,6 +449,25 @@ static void process_delta_color(const char* delta_time)
 
 }
 
+static void process_throttle_brake_bars(const char* throttle, const char* brake)
+{
+    static int prev_throttle = 0;
+    static int prev_brake = 0;
+    int curr_throttle = atoi(throttle);
+    int curr_brake = atoi(brake);
+
+    if(curr_throttle != prev_throttle)
+    {
+        lv_bar_set_value(objects.throttle_indicator, curr_throttle, LV_ANIM_ON);
+        prev_throttle = curr_throttle;
+    }
+    if(curr_brake != prev_brake)
+    {
+        lv_bar_set_value(objects.brake_indicator, curr_brake, LV_ANIM_ON);
+        prev_brake = curr_brake;
+    }
+}
+
 static void ui_apply_simhub_data(const simhub_data_t *data) {
 
     char temp_session_num[15] = "";
@@ -506,6 +526,8 @@ static void ui_apply_simhub_data(const simhub_data_t *data) {
     process_car_controls(data->engine_ignition, data->wipers, data->headlights);
 
     process_delta_color(data->delta_time);
+
+    process_throttle_brake_bars(data->throttle, data->brake);
 }
 
 static void ui_update_task(void *arg) {

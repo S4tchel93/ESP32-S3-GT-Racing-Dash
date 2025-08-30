@@ -267,18 +267,6 @@ void create_screen_main() {
             }
         }
         {
-            // Indicator bar
-            lv_obj_t *obj = lv_slider_create(parent_obj);
-            objects.indicator_bar = obj;
-            lv_obj_set_pos(obj, 322, 240);
-            lv_obj_set_size(obj, 159, 10);
-            lv_slider_set_value(obj, 25, LV_ANIM_OFF);
-            lv_obj_add_event_cb(obj, action_speed_change, LV_EVENT_VALUE_CHANGED, (void *)0);
-            lv_obj_set_style_text_color(obj, lv_color_hex(0xff21f337), LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_bg_color(obj, lv_color_hex(0xff69f321), LV_PART_INDICATOR | LV_STATE_DEFAULT);
-            lv_obj_set_style_bg_color(obj, lv_color_hex(0xff69f321), LV_PART_KNOB | LV_STATE_DEFAULT);
-        }
-        {
             // Rpm LED 5
             lv_obj_t *obj = lv_led_create(parent_obj);
             objects.rpm_led_5 = obj;
@@ -626,7 +614,7 @@ void create_screen_main() {
                     // FL Brake Temp
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.fl_brake_temp = obj;
-                    lv_obj_set_pos(obj, 60, 28);
+                    lv_obj_set_pos(obj, 59, 29);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     lv_obj_set_style_text_font(obj, &lv_font_montserrat_14, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -648,8 +636,8 @@ void create_screen_main() {
                     // FR Brake Temp
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.fr_brake_temp = obj;
-                    lv_obj_set_pos(obj, 117, 28);
-                    lv_obj_set_size(obj, 24, LV_SIZE_CONTENT);
+                    lv_obj_set_pos(obj, 116, 28);
+                    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     lv_obj_set_style_text_font(obj, &lv_font_montserrat_14, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_text_color(obj, lv_color_hex(0xffffffff), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -659,7 +647,7 @@ void create_screen_main() {
                     // RR Brake Temp
                     lv_obj_t *obj = lv_label_create(parent_obj);
                     objects.rr_brake_temp = obj;
-                    lv_obj_set_pos(obj, 117, 105);
+                    lv_obj_set_pos(obj, 116, 105);
                     lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
                     lv_obj_set_style_text_font(obj, &lv_font_montserrat_14, LV_PART_MAIN | LV_STATE_DEFAULT);
                     lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -873,7 +861,7 @@ void create_screen_main() {
             lv_obj_set_style_text_font(obj, &lv_font_montserrat_28, LV_PART_MAIN | LV_STATE_SCROLLED);
             lv_obj_set_style_text_font(obj, &lv_font_montserrat_36, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_color(obj, lv_color_hex(0xff464545), LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_text_align(obj, LV_TEXT_ALIGN_RIGHT, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(obj, "00:00.000");
         }
         {
@@ -943,7 +931,7 @@ void create_screen_main() {
             // Ignition Status
             lv_obj_t *obj = lv_obj_create(parent_obj);
             objects.ignition_status = obj;
-            lv_obj_set_pos(obj, 229, 67);
+            lv_obj_set_pos(obj, 226, 67);
             lv_obj_set_size(obj, 66, 41);
             lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
             lv_obj_set_style_border_opa(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -954,7 +942,7 @@ void create_screen_main() {
             // Wipers Status
             lv_obj_t *obj = lv_obj_create(parent_obj);
             objects.wipers_status = obj;
-            lv_obj_set_pos(obj, 154, 67);
+            lv_obj_set_pos(obj, 151, 67);
             lv_obj_set_size(obj, 66, 41);
             lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
             lv_obj_set_style_border_opa(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -965,12 +953,31 @@ void create_screen_main() {
             // Lights Status
             lv_obj_t *obj = lv_obj_create(parent_obj);
             objects.lights_status = obj;
-            lv_obj_set_pos(obj, 78, 67);
+            lv_obj_set_pos(obj, 75, 67);
             lv_obj_set_size(obj, 66, 41);
             lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
             lv_obj_set_style_border_opa(obj, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(obj, lv_color_hex(0xff2a2a2a), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_image_src(obj, &img_light_64, LV_PART_MAIN | LV_STATE_DEFAULT);
+        }
+        {
+            // Throttle Indicator
+            lv_obj_t *obj = lv_bar_create(parent_obj);
+            objects.throttle_indicator = obj;
+            lv_obj_set_pos(obj, 324, 234);
+            lv_obj_set_size(obj, 155, 10);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0xff27f321), LV_PART_INDICATOR | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0xff27f321), LV_PART_MAIN | LV_STATE_DEFAULT);
+        }
+        {
+            // Brake Indicator
+            lv_obj_t *obj = lv_bar_create(parent_obj);
+            objects.brake_indicator = obj;
+            lv_obj_set_pos(obj, 324, 244);
+            lv_obj_set_size(obj, 155, 10);
+            lv_bar_set_range(obj, 100, 0);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0xfff32121), LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_bg_color(obj, lv_color_hex(0xfff32121), LV_PART_INDICATOR | LV_STATE_DEFAULT);
         }
     }
     
@@ -1000,7 +1007,6 @@ void delete_screen_main() {
     objects.fuel_units = 0;
     objects.speed_panel = 0;
     objects.speed_value = 0;
-    objects.indicator_bar = 0;
     objects.rpm_led_5 = 0;
     objects.rpm_led_6 = 0;
     objects.rpm_led_4 = 0;
@@ -1067,6 +1073,8 @@ void delete_screen_main() {
     objects.ignition_status = 0;
     objects.wipers_status = 0;
     objects.lights_status = 0;
+    objects.throttle_indicator = 0;
+    objects.brake_indicator = 0;
 }
 
 void tick_screen_main() {

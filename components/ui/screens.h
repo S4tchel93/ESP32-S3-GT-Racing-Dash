@@ -29,7 +29,6 @@ typedef struct _objects_t {
     lv_obj_t *fuel_units;
     lv_obj_t *speed_panel;
     lv_obj_t *speed_value;
-    lv_obj_t *indicator_bar;
     lv_obj_t *rpm_led_5;
     lv_obj_t *rpm_led_6;
     lv_obj_t *rpm_led_4;
@@ -96,6 +95,8 @@ typedef struct _objects_t {
     lv_obj_t *ignition_status;
     lv_obj_t *wipers_status;
     lv_obj_t *lights_status;
+    lv_obj_t *throttle_indicator;
+    lv_obj_t *brake_indicator;
 } objects_t;
 
 extern objects_t objects;
@@ -115,12 +116,6 @@ void tick_screen(int screen_index);
 
 void create_screens();
 
-#define GREEN_COLOR (0xff00ff1b)
-#define YELLOW_COLOR (0xfff7ff00)
-#define RED_COLOR (0xffff0000)
-#define BLUE_COLOR (0xff00afff)
-#define WHITE_COLOR (0xffffffff)
-#define GRAY_CAR_CONTROLS_COLOR (0xff2a2a2a)
 
 #ifdef __cplusplus
 }
