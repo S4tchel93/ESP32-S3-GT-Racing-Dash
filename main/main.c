@@ -65,6 +65,16 @@ typedef struct simhub_data_t
     char fr_brake_temp[6];
     char rl_brake_temp[6];
     char rr_brake_temp[6];
+    char engine_ignition[2];
+    char headlights[2];
+    char wipers[6];
+    char session_name[15];
+    char session_time_left[10];
+    char position[6];
+    char opponent_count[6];
+    char throttle[6];
+    char brake[6];
+    char curr_lap[6];
 }simhub_data_t;
 
 static void example_lvgl_port_task(void *arg)
@@ -250,7 +260,17 @@ static simhub_field_t simhub_fields[] = {
     { NULL, 6},    //fl_brake_temp
     { NULL, 6},    //fr_brake_temp
     { NULL, 6},    //rl_brake_temp
-    { NULL, 6},    //frr_brake_temp
+    { NULL, 6},    //rr_brake_temp
+    { NULL, 2},    //engine_ignition
+    { NULL, 2},    //headlights
+    { NULL, 6},    //wipers
+    { NULL, 15},   //session_name
+    { NULL, 10},   //session_time_left
+    { NULL, 6},    //position
+    { NULL, 6},    //opponent_count
+    { NULL, 6},    //throttle
+    { NULL, 6},    //brake
+    { NULL, 6},    //curr_lap
 };
 
 static bool wait_for_sync(void) {
@@ -309,6 +329,16 @@ static void bind_simhub_fields(simhub_data_t *data) {
     simhub_fields[i++].dest = data->fr_brake_temp;
     simhub_fields[i++].dest = data->rl_brake_temp;
     simhub_fields[i++].dest = data->rr_brake_temp;
+    simhub_fields[i++].dest = data->engine_ignition;
+    simhub_fields[i++].dest = data->headlights;
+    simhub_fields[i++].dest = data->wipers;
+    simhub_fields[i++].dest = data->session_name;
+    simhub_fields[i++].dest = data->session_time_left;
+    simhub_fields[i++].dest = data->position;
+    simhub_fields[i++].dest = data->opponent_count;
+    simhub_fields[i++].dest = data->throttle;
+    simhub_fields[i++].dest = data->brake;
+    simhub_fields[i++].dest = data->curr_lap;
 }
 
 static bool parse_simhub_packet(simhub_data_t *out_data) {
@@ -371,35 +401,99 @@ static void update_label_if_changed(lv_obj_t *label, const char *new_val) {
     }
 }
 
+static void process_car_controls(const char* ignition, const char* wipers, const char* lights)
+{
+    static int prev_ignition = 0;
+    static int prev_wipers = 0;
+    static int prev_lights = 0;
+    int curr_ignition = atoi(ignition);
+    int curr_wipers = atoi(wipers);
+    int curr_lights = atoi(lights);
+    lv_color_t color;
+
+    if(curr_ignition != prev_ignition)
+    {
+        color = curr_ignition == 1 ? lv_color_hex(GREEN_COLOR):lv_color_hex(GRAY_CAR_CONTROLS_COLOR);
+        lv_obj_set_style_bg_color(objects.ignition_status, color, LV_PART_MAIN | LV_STATE_DEFAULT);
+        prev_ignition = curr_ignition;
+    }
+
+    if(curr_wipers != prev_wipers)
+    {
+        color = curr_wipers == 1 ? lv_color_hex(GREEN_COLOR):lv_color_hex(GRAY_CAR_CONTROLS_COLOR);
+        lv_obj_set_style_bg_color(objects.wipers_status, color, LV_PART_MAIN | LV_STATE_DEFAULT);
+        prev_wipers = curr_wipers;
+    }
+
+    if(curr_lights != prev_lights)
+    {
+        color = curr_lights == 1 ? lv_color_hex(GREEN_COLOR):lv_color_hex(GRAY_CAR_CONTROLS_COLOR);
+        lv_obj_set_style_bg_color(objects.lights_status, color, LV_PART_MAIN | LV_STATE_DEFAULT);
+        prev_lights = curr_lights;
+    }
+}
+
+static void process_delta_color(const char* delta_time)
+{
+    static char prev_sign = '-';
+    char curr_sign = delta_time[0];
+    lv_color_t color;
+
+    if(curr_sign != prev_sign)
+    {
+        color = curr_sign != '-' ? lv_color_hex(RED_COLOR):lv_color_hex(GREEN_COLOR);
+        lv_obj_set_style_bg_color(objects.lap_delta_value, color, LV_PART_MAIN | LV_STATE_DEFAULT);
+        prev_sign = curr_sign;
+    }
+
+}
+
 static void ui_apply_simhub_data(const simhub_data_t *data) {
+
+    char temp_session_num[15] = "";
+    char temp_separator[2] = "/";
+    char temp_sesion_time[10]="";
+
+    // Prepare first the full session pos/opp count
+    strcat(temp_session_num, data->position);
+    strcat(temp_session_num, temp_separator);
+    strcat(temp_session_num, data->opponent_count);
+
+    //Remove hours from session time left, only keep minutes and seconds
+    strcpy(temp_sesion_time, &data->session_time_left[3]);
+
     ui_label_update_t updates[] = {
-        { objects.gear_value,        data->curr_gear },
-        { objects.speed_value,       data->curr_speed },
-        { objects.estimated_lap_value, data->current_time },
-        { objects.last_lap_value,    data->last_time },
-        { objects.best_lap_value,    data->best_time },
-        { objects.lap_delta_value,   data->delta_time },
-        { objects.fl_tire_wear,      data->fl_wear },
-        { objects.fr_tire_wear,      data->fr_wear },
-        { objects.rl_tire_wear,      data->rl_wear },
-        { objects.rr_tire_wear,      data->rr_wear },
-        { objects.fl_tire_temp,      data->fl_tire_temp },
-        { objects.fr_tire_temp,      data->fr_tire_temp },
-        { objects.rl_tire_temp,      data->rl_tire_temp },
-        { objects.rr_tire_temp,      data->rr_tire_temp },
-        { objects.tc_value,          data->tc_level  },
-        { objects.abs_value,         data->abs_level },
-        { objects.map_value,         data->engine_map},
-        { objects.bb_value,          data->bb_level  },
-        { objects.fuel_value,        data->fuel      },
-        { objects.fl_pressure,       data->fl_tyre_pressure },
-        { objects.fr_pressure,       data->fr_tyre_pressure },
-        { objects.rl_pressure,       data->rl_tyre_pressure },
-        { objects.rr_pressure,       data->rr_tyre_pressure },
-        { objects.fl_brake_temp,     data->fl_brake_temp },
-        { objects.fr_brake_temp,     data->fr_brake_temp },
-        { objects.rl_brake_temp,     data->rl_brake_temp },
-        { objects.rr_brake_temp,     data->rr_brake_temp },
+        { objects.gear_value,           data->curr_gear },
+        { objects.speed_value,          data->curr_speed },
+        { objects.estimated_lap_value,  data->current_time },
+        { objects.last_lap_value,       data->last_time },
+        { objects.best_lap_value,       data->best_time },
+        { objects.lap_delta_value,      data->delta_time },
+        { objects.fl_tire_wear,         data->fl_wear },
+        { objects.fr_tire_wear,         data->fr_wear },
+        { objects.rl_tire_wear,         data->rl_wear },
+        { objects.rr_tire_wear,         data->rr_wear },
+        { objects.fl_tire_temp,         data->fl_tire_temp },
+        { objects.fr_tire_temp,         data->fr_tire_temp },
+        { objects.rl_tire_temp,         data->rl_tire_temp },
+        { objects.rr_tire_temp,         data->rr_tire_temp },
+        { objects.tc_value,             data->tc_level  },
+        { objects.abs_value,            data->abs_level },
+        { objects.map_value,            data->engine_map},
+        { objects.bb_value,             data->bb_level  },
+        { objects.fuel_value,           data->fuel      },
+        { objects.fl_pressure,          data->fl_tyre_pressure },
+        { objects.fr_pressure,          data->fr_tyre_pressure },
+        { objects.rl_pressure,          data->rl_tyre_pressure },
+        { objects.rr_pressure,          data->rr_tyre_pressure },
+        { objects.fl_brake_temp,        data->fl_brake_temp },
+        { objects.fr_brake_temp,        data->fr_brake_temp },
+        { objects.rl_brake_temp,        data->rl_brake_temp },
+        { objects.rr_brake_temp,        data->rr_brake_temp },
+        { objects.session_type_val,     data->session_name },
+        { objects.session_time_val,     temp_sesion_time },
+        { objects.session_position_val, temp_session_num},
+        { objects.session_lap_number_val,  data->curr_lap},
     };
 
     for (size_t i = 0; i < sizeof(updates)/sizeof(updates[0]); i++) {
@@ -408,6 +502,10 @@ static void ui_apply_simhub_data(const simhub_data_t *data) {
 
     // RPM LEDs (special case)
     process_rpm_leds(data->rpm_percent, data->rpm_redline_threshold);
+
+    process_car_controls(data->engine_ignition, data->wipers, data->headlights);
+
+    process_delta_color(data->delta_time);
 }
 
 static void ui_update_task(void *arg) {

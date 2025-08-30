@@ -20,7 +20,7 @@ format([TyreTemperatureRearRight], '00') + '°' + ';'+
 [ABSActive] + ';' +
 abs(format([BrakeBias], '00.0')) + ';' +
 if([EngineMap] != -1,[EngineMap], '-') + ';' +
-[LapInvalidated] + ';' +
+if([LapInvalidated], '1', '0') + ';' +
 format([Fuel], '00') + ';'+
 format([TyrePressureFrontLeft], '00.0') + ';' +
 format([TyrePressureFrontRight], '00.0') + ';' +
@@ -29,4 +29,14 @@ format([TyrePressureRearRight], '00.0') + ';' +
 format([BrakeTemperatureFrontLeft], '00') + ';' +
 format([BrakeTemperatureFrontRight], '00') + ';' +
 format([BrakeTemperatureRearLeft], '00') + ';' +
-format([BrakeTemperatureRearRight], '00') + ';' 
+format([BrakeTemperatureRearRight], '00') + ';' +
+if(([EngineIgnitionOn] | [EngineStarted]), '1', '0') + ';'+
+if(([ATSR_Hub.Telemetry_Headlight] | [ATSR_Hub.Telemetry_HeadlightFlash]), '1', '0') + ';' +
+[ATSR_Hub.Telemetry_Wiper] + ';' +
+[SessionTypeName] + ';' +
+[SessionTimeLeft] + ';' +
+[Position] + ';' +
+[OpponentsCount] + ';' +
+[Throttle] + ';' +
+[Brake] + ';' +
+[CurrentLap] + ';'
