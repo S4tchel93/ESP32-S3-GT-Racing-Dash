@@ -99,6 +99,7 @@ static long map(long x, long in_min, long in_max, long out_min, long out_max)
 }
 
 #define NUM_LEDS 9
+#define MIN_SEGMENTS 3.0
 
 typedef struct {
     lv_obj_t* led;
@@ -145,6 +146,11 @@ void process_rpm_leds(const char* rpm, const char* redline_threshold) {
 
     // Size of each segment
     float segment_size = (float)redline / NUM_LEDS;
+
+    if(segment_size < 1.0 )
+    {
+        segment_size = MIN_SEGMENTS;
+    }
 
     // Figure out which segment we're in
     int active_idx = (int)(rpm_val / segment_size);
