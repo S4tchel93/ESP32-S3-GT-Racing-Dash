@@ -1,0 +1,32 @@
+'S' + 'H' + ';' +
+isnull([DataCorePlugin.GameData.NewData.Gear],'N')+ ';' +
+format([DataCorePlugin.GameData.NewData.SpeedKmh],'0') + ';' + 
+format([CarSettings_CurrentDisplayedRPMPercent],'0')+ ';' +
+format([CarSettings_RPMRedLineSetting],'0')+ ';' +
+left([CurrentLapTime],3,8) + ';'+ left([LastLapTime],3,8) + ';' +
+left([BestLapTime],3,8) + ';' +
+format([PersistantTrackerPlugin.SessionBestLiveDeltaSeconds],'0.000') + ';' +
+format([TyreWearFrontLeft], '00') + '%' + ';' + 
+format([TyreWearFrontRight], '00') + '%' +  ';' + 
+format([TyreWearRearLeft], '00') + '%' + ';' + 
+format([TyreWearRearRight], '00') + '%' +  ';' +
+format([TyreTemperatureFrontLeft], '00') + '°' + ';' +
+format([TyreTemperatureFrontRight], '00') + '°' + ';' +
+format([TyreTemperatureRearLeft], '00') + '°' + ';' +
+format([TyreTemperatureRearRight], '00') + '°' + ';'+
+[TCLevel] + ';' +
+[TCActive] + ';' +
+[ABSLevel] + ';' +
+[ABSActive] + ';' +
+abs(format([BrakeBias], '00.0')) + ';' +
+if([EngineMap] != -1,[EngineMap], '-') + ';' +
+[LapInvalidated] + ';' +
+format([Fuel], '00') + ';'+
+format([TyrePressureFrontLeft], '00.0') + ';' +
+format([TyrePressureFrontRight], '00.0') + ';' +
+format([TyrePressureRearLeft], '00.0') + ';' +
+format([TyrePressureRearRight], '00.0') + ';' +
+format([BrakeTemperatureFrontLeft], '00') + ';' +
+format([BrakeTemperatureFrontRight], '00') + ';' +
+format([BrakeTemperatureRearLeft], '00') + ';' +
+format([BrakeTemperatureRearRight], '00') + ';' 

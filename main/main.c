@@ -49,6 +49,22 @@ typedef struct simhub_data_t
     char fr_tire_temp[6];
     char rl_tire_temp[6];
     char rr_tire_temp[6];
+    char tc_level[6];
+    char tc_active[6];
+    char abs_level[6];
+    char abs_active[6];
+    char bb_level[7];
+    char engine_map[6];
+    char lap_invalid[9];
+    char fuel[6];
+    char fl_tyre_pressure[6];
+    char fr_tyre_pressure[6];
+    char rl_tyre_pressure[6];
+    char rr_tyre_pressure[6];
+    char fl_brake_temp[6];
+    char fr_brake_temp[6];
+    char rl_brake_temp[6];
+    char rr_brake_temp[6];
 }simhub_data_t;
 
 static void example_lvgl_port_task(void *arg)
@@ -218,7 +234,23 @@ static simhub_field_t simhub_fields[] = {
     { NULL, 6 },   // fl_tire_temp
     { NULL, 6 },   // fr_tire_temp
     { NULL, 6 },   // rl_tire_temp
-    { NULL, 6 }    // rr_tire_temp
+    { NULL, 6 },   // rr_tire_temp
+    { NULL, 6},    //tc_level
+    { NULL, 6},    //tc_active
+    { NULL, 6},    //abs_level
+    { NULL, 6},    //abs_active
+    { NULL, 7},    //bb_level
+    { NULL, 6},    //engine_map
+    { NULL, 9},    //lap_invalid
+    { NULL, 6},    //fuel
+    { NULL, 6},    //fl_tyre_pressure
+    { NULL, 6},    //fr_tyre_pressure
+    { NULL, 6},    //rl_tyre_pressure
+    { NULL, 6},    //rr_tyre_pressure
+    { NULL, 6},    //fl_brake_temp
+    { NULL, 6},    //fr_brake_temp
+    { NULL, 6},    //rl_brake_temp
+    { NULL, 6},    //frr_brake_temp
 };
 
 static bool wait_for_sync(void) {
@@ -261,6 +293,22 @@ static void bind_simhub_fields(simhub_data_t *data) {
     simhub_fields[i++].dest = data->fr_tire_temp;
     simhub_fields[i++].dest = data->rl_tire_temp;
     simhub_fields[i++].dest = data->rr_tire_temp;
+    simhub_fields[i++].dest = data->tc_level;
+    simhub_fields[i++].dest = data->tc_active;
+    simhub_fields[i++].dest = data->abs_level;
+    simhub_fields[i++].dest = data->abs_active;
+    simhub_fields[i++].dest = data->bb_level;
+    simhub_fields[i++].dest = data->engine_map;
+    simhub_fields[i++].dest = data->lap_invalid;
+    simhub_fields[i++].dest = data->fuel;
+    simhub_fields[i++].dest = data->fl_tyre_pressure;
+    simhub_fields[i++].dest = data->fr_tyre_pressure;
+    simhub_fields[i++].dest = data->rl_tyre_pressure;
+    simhub_fields[i++].dest = data->rr_tyre_pressure;
+    simhub_fields[i++].dest = data->fl_brake_temp;
+    simhub_fields[i++].dest = data->fr_brake_temp;
+    simhub_fields[i++].dest = data->rl_brake_temp;
+    simhub_fields[i++].dest = data->rr_brake_temp;
 }
 
 static bool parse_simhub_packet(simhub_data_t *out_data) {
@@ -339,6 +387,19 @@ static void ui_apply_simhub_data(const simhub_data_t *data) {
         { objects.fr_tire_temp,      data->fr_tire_temp },
         { objects.rl_tire_temp,      data->rl_tire_temp },
         { objects.rr_tire_temp,      data->rr_tire_temp },
+        { objects.tc_value,          data->tc_level  },
+        { objects.abs_value,         data->abs_level },
+        { objects.map_value,         data->engine_map},
+        { objects.bb_value,          data->bb_level  },
+        { objects.fuel_value,        data->fuel      },
+        { objects.fl_pressure,       data->fl_tyre_pressure },
+        { objects.fr_pressure,       data->fr_tyre_pressure },
+        { objects.rl_pressure,       data->rl_tyre_pressure },
+        { objects.rr_pressure,       data->rr_tyre_pressure },
+        { objects.fl_brake_temp,     data->fl_brake_temp },
+        { objects.fr_brake_temp,     data->fr_brake_temp },
+        { objects.rl_brake_temp,     data->rl_brake_temp },
+        { objects.rr_brake_temp,     data->rr_brake_temp },
     };
 
     for (size_t i = 0; i < sizeof(updates)/sizeof(updates[0]); i++) {
