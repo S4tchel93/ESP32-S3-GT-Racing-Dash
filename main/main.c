@@ -29,7 +29,6 @@ static const char *TAG = "example";
 
 // LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
-static _lock_t simhub_data_lock;
 QueueHandle_t xQueue;
 
 typedef struct simhub_data_t
@@ -93,27 +92,6 @@ static void touchpad_read(lv_indev_t *indev_drv, lv_indev_data_t *data)
 }
 
 #define BUF_SIZE (1024)
-#define ECHO_TASK_STACK_SIZE (4096)
-
-static void search_until(uint8_t* in_buf, uint8_t start_idx, uint8_t* out_len, char* out_buf)
-{
-    uint8_t count = 0;
-    while(1)
-    {
-        if(in_buf[start_idx + count] != ';')
-        {
-            out_buf[count] = in_buf[start_idx + count];
-            count++;
-        }
-        else
-        {
-            out_buf[count] = '\0';
-            break;
-        }
-    }
-    *out_len = count;
-    //printf("Out length %d\n", count);
-}
 
 static long map(long x, long in_min, long in_max, long out_min, long out_max)
 {
@@ -153,7 +131,7 @@ static void set_led(uint8_t idx, uint32_t color, uint8_t brightness) {
     }
 }
 
-void process_rpm_leds(char* rpm, char* redline_threshold) {
+void process_rpm_leds(const char* rpm, const char* redline_threshold) {
     uint16_t rpm_val = atoi(rpm);
     uint16_t redline = atoi(redline_threshold);
 
