@@ -31,9 +31,8 @@
 
 #define USB_JTAG_UART_BUFF_SIZE (1024)
 
-static const char *TAG = "example";
-
-// LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
+static const char *TAG = "SimHub-Dash";
+// LVGL library is not thread-safe, this app will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
 
 void app_main(void)
@@ -61,7 +60,6 @@ void app_main(void)
     lv_display_t *display = lv_display_create(EXAMPLE_LCD_H_RES, EXAMPLE_LCD_V_RES);
 
     // Initialize the touchpad input device
-    
     /* Register a touchpad input device */
     lv_indev_t *indev = lv_indev_create(); 
     lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER); // Set the input device type
@@ -119,6 +117,7 @@ void app_main(void)
     ESP_LOGI(TAG, "Display LVGL UI");
     // Lock the mutex due to the LVGL APIs are not thread-safe
     _lock_acquire(&lvgl_api_lock);
+    // This initializes the screen with the UI created on EEZ Studio
     ui_init();
     _lock_release(&lvgl_api_lock);
 
