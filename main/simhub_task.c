@@ -1,19 +1,43 @@
+/***************************************************************************************************************************
+ * INCLUDE SECTION
+ ***************************************************************************************************************************/
+/*project includes*/
 #include "simhub_task.h"
 #include "simhub_data.h"
+
+/*System/ESP IDF Includes*/
 #include <stdio.h>
 #include <unistd.h>
 #include "freertos/task.h"
 #include "driver/usb_serial_jtag.h"
 #include "string.h"
 
-#define SIMHUB_SYNC "SH;"
-#define SIMHUB_MAX_FIELDS 16
+/***************************************************************************************************************************
+ * PRIVATE DEFINITIONS
+ ***************************************************************************************************************************/
 
+ /**
+  * @brief String used as Header or Sync for a full SimHub data packet
+  */
+#define SIMHUB_SYNC "SH;"
+
+/***************************************************************************************************************************
+ * PRIVATE DATA & TYPES
+ ***************************************************************************************************************************/
+
+/**
+ * @brief structure that aids iterating through all the
+ * simhub data elements when parsing the simhub data packet
+ */
 typedef struct {
     char *dest;      // pointer into struct field
     size_t max_size; // including null terminator
 } simhub_field_t;
 
+/**
+ * @brief Holds pointers to simhub data elements
+ * and their max sizes
+ */
 static simhub_field_t simhub_fields[] = {
     { NULL, 2 },   // curr_gear
     { NULL, 4 },   // curr_speed
@@ -31,36 +55,54 @@ static simhub_field_t simhub_fields[] = {
     { NULL, 6 },   // fr_tire_temp
     { NULL, 6 },   // rl_tire_temp
     { NULL, 6 },   // rr_tire_temp
-    { NULL, 6},    //tc_level
-    { NULL, 6},    //tc_active
-    { NULL, 6},    //abs_level
-    { NULL, 6},    //abs_active
-    { NULL, 7},    //bb_level
-    { NULL, 6},    //engine_map
-    { NULL, 9},    //lap_invalid
-    { NULL, 6},    //fuel
-    { NULL, 6},    //fl_tyre_pressure
-    { NULL, 6},    //fr_tyre_pressure
-    { NULL, 6},    //rl_tyre_pressure
-    { NULL, 6},    //rr_tyre_pressure
-    { NULL, 6},    //fl_brake_temp
-    { NULL, 6},    //fr_brake_temp
-    { NULL, 6},    //rl_brake_temp
-    { NULL, 6},    //rr_brake_temp
-    { NULL, 2},    //engine_ignition
-    { NULL, 2},    //headlights
-    { NULL, 6},    //wipers
+    { NULL, 6 },   //tc_level
+    { NULL, 6 },   //tc_active
+    { NULL, 6 },   //abs_level
+    { NULL, 6 },   //abs_active
+    { NULL, 7 },   //bb_level
+    { NULL, 6 },   //engine_map
+    { NULL, 9 },   //lap_invalid
+    { NULL, 6 },   //fuel
+    { NULL, 6 },   //fl_tyre_pressure
+    { NULL, 6 },   //fr_tyre_pressure
+    { NULL, 6 },   //rl_tyre_pressure
+    { NULL, 6 },   //rr_tyre_pressure
+    { NULL, 6 },   //fl_brake_temp
+    { NULL, 6 },   //fr_brake_temp
+    { NULL, 6 },   //rl_brake_temp
+    { NULL, 6 },   //rr_brake_temp
+    { NULL, 2 },   //engine_ignition
+    { NULL, 2 },   //headlights
+    { NULL, 6 },   //wipers
     { NULL, 15},   //session_name
     { NULL, 10},   //session_time_left
-    { NULL, 6},    //position
-    { NULL, 6},    //opponent_count
-    { NULL, 6},    //throttle
-    { NULL, 6},    //brake
-    { NULL, 6},    //curr_lap
+    { NULL, 6 },   //position
+    { NULL, 6 },   //opponent_count
+    { NULL, 6 },   //throttle
+    { NULL, 6 },   //brake
+    { NULL, 6 },   //curr_lap
 };
 
 static QueueHandle_t xQueue;
 
+/***************************************************************************************************************************
+ * PRIVATE FUNCTION DECLARATIONS
+ ***************************************************************************************************************************/
+
+static bool wait_for_sync(void);
+static void bind_simhub_fields(simhub_data_t *data);
+static bool parse_simhub_packet(simhub_data_t *out_data);
+
+ /***************************************************************************************************************************
+ * PRIVATE FUNCTION DEFINITIONS
+ ***************************************************************************************************************************/
+
+/**
+ * @brief Reads uart/jtag until SIMHUB_SYNC header is found
+ * 
+ * @return true if SIMHUB_SYNC header is found
+ * @return false after timeout
+ */
 static bool wait_for_sync(void) {
     const char *sync = SIMHUB_SYNC;
     int matched = 0;
@@ -83,6 +125,12 @@ static bool wait_for_sync(void) {
     }
 }
 
+/**
+ * @brief Assigns the simhub data elements to simhub_fields struct to be able to iterate
+ * through the elements within parse_simhub_packet()
+ * 
+ * @param data simhub data pointer
+ */
 static void bind_simhub_fields(simhub_data_t *data) {
     int i = 0;
     simhub_fields[i++].dest = data->curr_gear;
@@ -129,8 +177,16 @@ static void bind_simhub_fields(simhub_data_t *data) {
     simhub_fields[i++].dest = data->curr_lap;
 }
 
-static bool parse_simhub_packet(simhub_data_t *out_data) {
-    bind_simhub_fields(out_data);
+/**
+ * @brief Function that parses the incoming simhub data and places it as strings
+ * on their corresponding simhub_data_t structure elements.
+ * 
+ * @param simhub_data simhub data structure used to store strings of the incoming data
+ * @return true when all fields have been received (full expected packet)
+ * @return false when reading uart/jtag returns 0, times out after 20 ms
+ */
+static bool parse_simhub_packet(simhub_data_t *simhub_data) {
+    bind_simhub_fields(simhub_data);
 
     char field_buf[64];
     size_t field_len = 0;
@@ -160,6 +216,19 @@ static bool parse_simhub_packet(simhub_data_t *out_data) {
     return true;
 }
 
+ /***************************************************************************************************************************
+ * PUBLIC FUNCTION DEFINITIONS
+ ***************************************************************************************************************************/
+
+ /**
+  * @brief Task that waits for SimHub Sync/Header and then reads
+  * a full simhub data packet.
+  * 
+  * @details After receiving a full simhub data packet, it sends it to
+  * ui_update_task through the xQueue.
+  * 
+  * @param arg parameters passed from main, none for now
+  */
 void simhub_task(void *arg) {
     /*initialize queue to send data to ui update task*/
     xQueue = xQueueCreate(5U, sizeof(simhub_data_t));
@@ -180,6 +249,11 @@ void simhub_task(void *arg) {
     }
 }
 
+/**
+ * @brief Get the simhub data queue object
+ * 
+ * @return QueueHandle_t pointer
+ */
 QueueHandle_t* get_simhub_data_queue(void)
 {
     return &xQueue;
