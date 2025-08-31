@@ -9,8 +9,8 @@
 #include <sys/lock.h>
 #include <sys/param.h>
 #include "sdkconfig.h"
-//#include "freertos/FreeRTOS.h"
-//#include "freertos/task.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "esp_timer.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_rgb.h"
@@ -35,7 +35,6 @@ static const char *TAG = "example";
 
 // LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
-static QueueHandle_t xQueue;
 
 static void example_lvgl_port_task(void *arg)
 {
@@ -153,7 +152,6 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, EXAMPLE_LVGL_TICK_PERIOD_MS * 1000));
 
     ESP_LOGI(TAG, "Create Queue for simhub and UI update tasks");
-    xQueue = xQueueCreate(5U, sizeof(simhub_data_t)); // QUEUE_LENGTH is the depth, DataType is the type of data to be sent
 
     ESP_LOGI(TAG, "Create LVGL task");
     xTaskCreatePinnedToCore(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL, 0);
@@ -169,9 +167,4 @@ void app_main(void)
 
     ESP_LOGI(TAG, "Create UI Update task");
     xTaskCreatePinnedToCore(ui_update_task, "UI_Update", EXAMPLE_LVGL_TASK_STACK_SIZE, &lvgl_api_lock, 3, NULL, 1);
-}
-
-QueueHandle_t* Get_simhub_data_queue(void)
-{
-    return &xQueue;
 }

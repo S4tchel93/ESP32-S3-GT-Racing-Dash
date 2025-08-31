@@ -3,9 +3,9 @@
 #include "user_colors.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "main.h"
 #include <sys/lock.h>
 #include "simhub_data.h"
+#include "simhub_task.h"
 #include "string.h"
 
 #define NUM_LEDS 9
@@ -255,7 +255,7 @@ void ui_update_task(void *arg) {
     QueueHandle_t* xQueue_p;
     _lock_t* lvgl_api_lock = (_lock_t*) arg;
 
-    xQueue_p = Get_simhub_data_queue();
+    xQueue_p = get_simhub_data_queue();
     xQueue = *xQueue_p;
 
     init_rpm_leds();

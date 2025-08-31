@@ -2,11 +2,9 @@
 #include "simhub_data.h"
 #include <stdio.h>
 #include <unistd.h>
-#include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/usb_serial_jtag.h"
 #include "string.h"
-#include "main.h"
 
 #define SIMHUB_SYNC "SH;"
 #define SIMHUB_MAX_FIELDS 16
@@ -60,6 +58,8 @@ static simhub_field_t simhub_fields[] = {
     { NULL, 6},    //brake
     { NULL, 6},    //curr_lap
 };
+
+static QueueHandle_t xQueue;
 
 static bool wait_for_sync(void) {
     const char *sync = SIMHUB_SYNC;
@@ -161,10 +161,9 @@ static bool parse_simhub_packet(simhub_data_t *out_data) {
 }
 
 void simhub_task(void *arg) {
-    QueueHandle_t xQueue;
-    QueueHandle_t* xQueue_p;
-    xQueue_p = Get_simhub_data_queue();
-    xQueue = *xQueue_p;
+    /*initialize queue to send data to ui update task*/
+    xQueue = xQueueCreate(5U, sizeof(simhub_data_t));
+
     while (1) {
         simhub_data_t simhub_data = {0};
 
@@ -179,4 +178,9 @@ void simhub_task(void *arg) {
             xQueueSend(xQueue, &simhub_data, 10 / portTICK_PERIOD_MS);
         }
     }
+}
+
+QueueHandle_t* get_simhub_data_queue(void)
+{
+    return &xQueue;
 }
