@@ -1,42 +1,120 @@
+
+/***************************************************************************************************************************
+ * INCLUDE SECTION
+ ***************************************************************************************************************************/
+/*project includes*/
 #include "ui_update_task.h"
 #include "screens.h"
 #include "user_colors.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "simhub_data.h"
 #include "simhub_task.h"
-#include "string.h"
 
+/*System/ESP IDF Includes*/
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "string.h"
 #include <sys/lock.h>
 
-#define NUM_LEDS 9
-#define MIN_SEGMENTS 3.0
+/***************************************************************************************************************************
+ * PRIVATE DEFINITIONS
+ ***************************************************************************************************************************/
 
+/**
+ * @brief Number of RPM Leds on the screen
+ * 
+ */
+#define NUM_LEDS (9)
+
+/**
+ * @brief Minimum segments allowed for RPM LED strip
+ * Only used whenever we get 0 on redline threshold data from simhub.
+ * Used to prevent division by 0
+ */
+#define MIN_SEGMENTS (3.0)
+
+/***************************************************************************************************************************
+ * PRIVATE DATA & TYPES
+ ***************************************************************************************************************************/
+
+/**
+ * @brief Struct that holds LED LVGL object data
+ *  for LED manipulation
+ */
 typedef struct {
-    lv_obj_t* led;
-    uint32_t color;
-    uint8_t brightness;
+    lv_obj_t* led; // lvgl LED object
+    uint32_t color; // LED color
+    uint8_t brightness; // LED brightness
 } led_state_t;
 
+/**
+ * @brief Struct that holds LVGL object label data for label
+ * manipulation
+ */
 typedef struct {
-    lv_obj_t *label;
-    const char *value;
+    lv_obj_t *label; //lvgl label object
+    const char *value; //label value
 } ui_label_update_t;
 
+/**
+ * @brief holds rpm LED data for the current module
+ * 
+ */
 static led_state_t rpm_leds[NUM_LEDS];
 
+/***************************************************************************************************************************
+ * PRIVATE FUNCTION DECLARATIONS
+ ***************************************************************************************************************************/
+
+static long map(long x, long in_min, long in_max, long out_min, long out_max);
+static uint32_t get_led_color(uint8_t idx);
+static void set_led(uint8_t idx, uint32_t color, uint8_t brightness);
+static void process_rpm_leds(const char* rpm, const char* redline_threshold);
+static void init_rpm_leds(void);
+static void update_label_if_changed(lv_obj_t *label, const char *new_val);
+static void update_label_if_changed(lv_obj_t *label, const char *new_val);
+static void process_car_controls(const char* ignition, const char* wipers, const char* lights);
+static void process_delta_color(const char* delta_time);
+static void process_throttle_brake_bars(const char* throttle, const char* brake);
+static void ui_apply_simhub_data(const simhub_data_t *data);
+
+ /***************************************************************************************************************************
+ * PRIVATE FUNCTION DEFINITIONS
+ ***************************************************************************************************************************/
+
+/**
+ * @brief Maps an input value from one range to another (as in a rule of three)
+ * 
+ * @param x Value to be maped from input range to output range
+ * @param in_min input minimum value
+ * @param in_max input maximum value
+ * @param out_min output minimum value
+ * @param out_max output maximum value
+ * @return long input value mapped to output range
+ */
 static long map(long x, long in_min, long in_max, long out_min, long out_max)
 {
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
-// Choose LED colors by index
+/**
+ * @brief Get the led color object
+ * 
+ * @param idx LED index to get its configured color
+ * @return uint32_t LED Color
+ */
 static uint32_t get_led_color(uint8_t idx) {
     if (idx < 3) return GREEN_COLOR;
     else if (idx < 6) return YELLOW_COLOR;
     else return RED_COLOR;
 }
 
+/**
+ * @brief Set the led object if color and brightness has changed
+ * 
+ * @param idx LED index to be set
+ * @param color Color to be set
+ * @param brightness Brightness to be set
+ */
 static void set_led(uint8_t idx, uint32_t color, uint8_t brightness) {
     if (idx >= NUM_LEDS) return;
 
@@ -53,6 +131,16 @@ static void set_led(uint8_t idx, uint32_t color, uint8_t brightness) {
     }
 }
 
+/**
+ * @brief Main processing function for the RPM LED Bar
+ * 
+ * @details Determines the number of segments based on the number
+ * of LEDs available and the redline_threshold value. Based on that it figures out
+ * which LED from each segment has to be lit and how bright it needs to be.
+ * 
+ * @param rpm RPM percentage value coming from simhub
+ * @param redline_threshold RPM Redline threshold percentage value coming from simhub
+ */
 static void process_rpm_leds(const char* rpm, const char* redline_threshold) {
     uint16_t rpm_val = atoi(rpm);
     uint16_t redline = atoi(redline_threshold);
@@ -97,6 +185,10 @@ static void process_rpm_leds(const char* rpm, const char* redline_threshold) {
     }
 }
 
+/**
+ * @brief Initializes the RPM Led structure to point to the correct LVGL
+ * objects
+ */
 static void init_rpm_leds(void) {
     rpm_leds[0].led = objects.rpm_led_1;
     rpm_leds[1].led = objects.rpm_led_2;
@@ -115,6 +207,13 @@ static void init_rpm_leds(void) {
     }
 }
 
+/**
+ * @brief Updates the labels (text) on screen if the new value coming
+ * from simhub has changed from previously received data
+ * 
+ * @param label LVGL Label (text) object
+ * @param new_val New value received from simhub
+ */
 static void update_label_if_changed(lv_obj_t *label, const char *new_val) {
     const char *old_val = lv_label_get_text(label);
     if (strcmp(old_val, new_val) != 0) {
@@ -122,6 +221,14 @@ static void update_label_if_changed(lv_obj_t *label, const char *new_val) {
     }
 }
 
+/**
+ * @brief Updates the car control panel colors (only if
+ * data has changed from previously received data)
+ * 
+ * @param ignition ignition status pointer from received simhub data
+ * @param wipers wipers status pointer from received simhub data
+ * @param lights lights status pointer from received simhub data
+ */
 static void process_car_controls(const char* ignition, const char* wipers, const char* lights)
 {
     static int prev_ignition = 0;
@@ -154,6 +261,12 @@ static void process_car_controls(const char* ignition, const char* wipers, const
     }
 }
 
+/**
+ * @brief Updates the delta label background colors (only if
+ * data has changed from previously received data)
+ * 
+ * @param delta_time delta time string pointer from received simhub data
+ */
 static void process_delta_color(const char* delta_time)
 {
     static char prev_sign = '-';
@@ -169,6 +282,13 @@ static void process_delta_color(const char* delta_time)
 
 }
 
+/**
+ * @brief Updates the throttle and brake bars with new data (only if
+ * data has changed from previously received data)
+ * 
+ * @param throttle throttle string pointer from received simhub data
+ * @param brake brake string pointer from received simhub data
+ */
 static void process_throttle_brake_bars(const char* throttle, const char* brake)
 {
     static int prev_throttle = 0;
@@ -188,6 +308,12 @@ static void process_throttle_brake_bars(const char* throttle, const char* brake)
     }
 }
 
+/**
+ * @brief Applies newly received simhub data to the different
+ * elements on screen.
+ * 
+ * @param data simhub data packet pointer
+ */
 static void ui_apply_simhub_data(const simhub_data_t *data) {
 
     char temp_session_num[15] = "";
@@ -250,6 +376,20 @@ static void ui_apply_simhub_data(const simhub_data_t *data) {
     process_throttle_brake_bars(data->throttle, data->brake);
 }
 
+ /***************************************************************************************************************************
+ * PUBLIC FUNCTION DEFINITIONS
+ ***************************************************************************************************************************/
+
+/**
+ * @brief Task that updates the LVGL UI elements on screen.
+ * 
+ * @details This task is dormant until it gets a simhub_data packet
+ * on xQueue coming from the simhub_task.
+ * 
+ * @param arg holds data passed from main.c, in this case it contains
+ * the lvgl_api_lock that is used to control accesses to lvgl data from
+ * different tasks
+ */
 void ui_update_task(void *arg) {
     simhub_data_t simhub_data;
     QueueHandle_t xQueue;
@@ -268,6 +408,5 @@ void ui_update_task(void *arg) {
             _lock_release(lvgl_api_lock);
         }
         taskYIELD();
-        // vTaskDelay(10 / portTICK_PERIOD_MS);  // optional throttle
     }
 }
