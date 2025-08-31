@@ -3,10 +3,11 @@
 #include "user_colors.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include <sys/lock.h>
 #include "simhub_data.h"
 #include "simhub_task.h"
 #include "string.h"
+
+#include <sys/lock.h>
 
 #define NUM_LEDS 9
 #define MIN_SEGMENTS 3.0

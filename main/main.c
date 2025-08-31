@@ -36,46 +36,6 @@ static const char *TAG = "example";
 // LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
 
-static void example_lvgl_port_task(void *arg)
-{
-    ESP_LOGI(TAG, "Starting LVGL task");
-    uint32_t time_till_next_ms = 0;
-    while (1) {
-        _lock_acquire(&lvgl_api_lock);
-        time_till_next_ms = lv_timer_handler();
-        _lock_release(&lvgl_api_lock);
-        // in case of task watch dog timeout
-        time_till_next_ms = MAX(time_till_next_ms, EXAMPLE_LVGL_TASK_MIN_DELAY_MS);
-        // in case of lvgl display not ready yet
-        time_till_next_ms = MIN(time_till_next_ms, EXAMPLE_LVGL_TASK_MAX_DELAY_MS);
-        usleep(1000 * time_till_next_ms);
-    }
-}
-
-static void touchpad_read(lv_indev_t *indev_drv, lv_indev_data_t *data)
-{
-    esp_lcd_touch_handle_t tp = (esp_lcd_touch_handle_t)lv_indev_get_driver_data(indev_drv);
-    assert(tp); // Ensure touchpad handle is valid
-
-    uint16_t touchpad_x; // Variable for X coordinate
-    uint16_t touchpad_y; // Variable for Y coordinate
-    uint8_t touchpad_cnt = 0; // Variable for touch count
-
-    /* Read data from touch controller into memory */
-    esp_lcd_touch_read_data(tp); // Read data from touch controller
-
-    /* Read data from touch controller */
-    bool touchpad_pressed = esp_lcd_touch_get_coordinates(tp, &touchpad_x, &touchpad_y, NULL, &touchpad_cnt, 1); // Get touch coordinates
-    if (touchpad_pressed && touchpad_cnt > 0) {
-        data->point.x = touchpad_x; // Set the X coordinate
-        data->point.y = touchpad_y; // Set the Y coordinate
-        data->state = LV_INDEV_STATE_PRESSED; // Set state to pressed
-        ESP_LOGI(TAG, "Touch position: %d,%d", touchpad_x, touchpad_y); // Log touch position
-    } else {
-        data->state = LV_INDEV_STATE_RELEASED; // Set state to released
-    }
-}
-
 void app_main(void)
 {
     // Configure USB SERIAL JTAG
@@ -105,7 +65,7 @@ void app_main(void)
     /* Register a touchpad input device */
     lv_indev_t *indev = lv_indev_create(); 
     lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER); // Set the input device type
-    lv_indev_set_read_cb(indev, touchpad_read); // Set the read callback function
+    lv_indev_set_read_cb(indev, lvgl_port_touchpad_read); // Set the read callback function
     lv_indev_set_driver_data(indev, tp_handle); // Set driver data to the touch panel handle
 
     // associate the rgb panel handle to the display
@@ -133,18 +93,18 @@ void app_main(void)
 #endif // CONFIG_EXAMPLE_USE_DOUBLE_FB
 
     // set the callback which can copy the rendered image to an area of the display
-    lv_display_set_flush_cb(display, example_lvgl_flush_cb);
+    lv_display_set_flush_cb(display, lvgl_port_lvgl_flush_cb);
 
     ESP_LOGI(TAG, "Register event callbacks");
     esp_lcd_rgb_panel_event_callbacks_t cbs = {
-        .on_color_trans_done = example_notify_lvgl_flush_ready,
+        .on_color_trans_done = lvgl_port_notify_lvgl_flush_ready,
     };
     ESP_ERROR_CHECK(esp_lcd_rgb_panel_register_event_callbacks(panel_handle, &cbs, display));
 
     ESP_LOGI(TAG, "Install LVGL tick timer");
     // Tick interface for LVGL (using esp_timer to generate 2ms periodic event)
     const esp_timer_create_args_t lvgl_tick_timer_args = {
-        .callback = &example_increase_lvgl_tick,
+        .callback = &lvgl_port_increase_lvgl_tick,
         .name = "lvgl_tick"
     };
     esp_timer_handle_t lvgl_tick_timer = NULL;
@@ -154,7 +114,7 @@ void app_main(void)
     ESP_LOGI(TAG, "Create Queue for simhub and UI update tasks");
 
     ESP_LOGI(TAG, "Create LVGL task");
-    xTaskCreatePinnedToCore(example_lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, EXAMPLE_LVGL_TASK_PRIORITY, NULL, 0);
+    xTaskCreatePinnedToCore(lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, &lvgl_api_lock, EXAMPLE_LVGL_TASK_PRIORITY, NULL, 0);
 
     ESP_LOGI(TAG, "Display LVGL UI");
     // Lock the mutex due to the LVGL APIs are not thread-safe
