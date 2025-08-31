@@ -9,8 +9,8 @@
 #include <sys/lock.h>
 #include <sys/param.h>
 #include "sdkconfig.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+//#include "freertos/FreeRTOS.h"
+//#include "freertos/task.h"
 #include "esp_timer.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_rgb.h"
@@ -25,58 +25,16 @@
 #include "driver/usb_serial_jtag.h"
 #include "screens.h"
 #include "user_colors.h"
+#include "simhub_data.h"
+#include "simhub_task.h"
+
+#define USB_JTAG_UART_BUFF_SIZE (1024)
 
 static const char *TAG = "example";
 
 // LVGL library is not thread-safe, this example will call LVGL APIs from different tasks, so use a mutex to protect it
 static _lock_t lvgl_api_lock;
-QueueHandle_t xQueue;
-
-typedef struct simhub_data_t
-{
-    char curr_gear[2];
-    char curr_speed[4];
-    char rpm_percent[4];
-    char rpm_redline_threshold[4] ;
-    char current_time[9];
-    char last_time[9];
-    char best_time[9];
-    char delta_time[7];
-    char fl_wear[6];
-    char fr_wear[6];
-    char rl_wear[6];
-    char rr_wear[6];
-    char fl_tire_temp[6];
-    char fr_tire_temp[6];
-    char rl_tire_temp[6];
-    char rr_tire_temp[6];
-    char tc_level[6];
-    char tc_active[6];
-    char abs_level[6];
-    char abs_active[6];
-    char bb_level[7];
-    char engine_map[6];
-    char lap_invalid[9];
-    char fuel[6];
-    char fl_tyre_pressure[6];
-    char fr_tyre_pressure[6];
-    char rl_tyre_pressure[6];
-    char rr_tyre_pressure[6];
-    char fl_brake_temp[6];
-    char fr_brake_temp[6];
-    char rl_brake_temp[6];
-    char rr_brake_temp[6];
-    char engine_ignition[2];
-    char headlights[2];
-    char wipers[6];
-    char session_name[15];
-    char session_time_left[10];
-    char position[6];
-    char opponent_count[6];
-    char throttle[6];
-    char brake[6];
-    char curr_lap[6];
-}simhub_data_t;
+static QueueHandle_t xQueue;
 
 static void example_lvgl_port_task(void *arg)
 {
@@ -117,8 +75,6 @@ static void touchpad_read(lv_indev_t *indev_drv, lv_indev_data_t *data)
         data->state = LV_INDEV_STATE_RELEASED; // Set state to released
     }
 }
-
-#define BUF_SIZE (1024)
 
 static long map(long x, long in_min, long in_max, long out_min, long out_max)
 {
@@ -218,175 +174,6 @@ void init_rpm_leds(void) {
     for (int i = 0; i < NUM_LEDS; i++) {
         rpm_leds[i].color = 0xFFFFFFFF;   // invalid color
         rpm_leds[i].brightness = 0xFF;    // invalid brightness
-    }
-}
-
-#define SIMHUB_SYNC "SH;"
-#define SIMHUB_MAX_FIELDS 16
-
-typedef struct {
-    char *dest;      // pointer into struct field
-    size_t max_size; // including null terminator
-} simhub_field_t;
-
-static simhub_field_t simhub_fields[] = {
-    { NULL, 2 },   // curr_gear
-    { NULL, 4 },   // curr_speed
-    { NULL, 4 },   // rpm_percent
-    { NULL, 4 },   // rpm_redline_threshold
-    { NULL, 9 },   // current_time
-    { NULL, 9 },   // last_time
-    { NULL, 9 },   // best_time
-    { NULL, 7 },   // delta_time
-    { NULL, 6 },   // fl_wear
-    { NULL, 6 },   // fr_wear
-    { NULL, 6 },   // rl_wear
-    { NULL, 6 },   // rr_wear
-    { NULL, 6 },   // fl_tire_temp
-    { NULL, 6 },   // fr_tire_temp
-    { NULL, 6 },   // rl_tire_temp
-    { NULL, 6 },   // rr_tire_temp
-    { NULL, 6},    //tc_level
-    { NULL, 6},    //tc_active
-    { NULL, 6},    //abs_level
-    { NULL, 6},    //abs_active
-    { NULL, 7},    //bb_level
-    { NULL, 6},    //engine_map
-    { NULL, 9},    //lap_invalid
-    { NULL, 6},    //fuel
-    { NULL, 6},    //fl_tyre_pressure
-    { NULL, 6},    //fr_tyre_pressure
-    { NULL, 6},    //rl_tyre_pressure
-    { NULL, 6},    //rr_tyre_pressure
-    { NULL, 6},    //fl_brake_temp
-    { NULL, 6},    //fr_brake_temp
-    { NULL, 6},    //rl_brake_temp
-    { NULL, 6},    //rr_brake_temp
-    { NULL, 2},    //engine_ignition
-    { NULL, 2},    //headlights
-    { NULL, 6},    //wipers
-    { NULL, 15},   //session_name
-    { NULL, 10},   //session_time_left
-    { NULL, 6},    //position
-    { NULL, 6},    //opponent_count
-    { NULL, 6},    //throttle
-    { NULL, 6},    //brake
-    { NULL, 6},    //curr_lap
-};
-
-static bool wait_for_sync(void) {
-    const char *sync = SIMHUB_SYNC;
-    int matched = 0;
-
-    while (1) {
-        char c;
-        int len = usb_serial_jtag_read_bytes(&c, 1, 50 / portTICK_PERIOD_MS);
-        if (len <= 0) {
-            return false; // timeout
-        }
-
-        if (c == sync[matched]) {
-            matched++;
-            if (matched == 3) {
-                return true; // full "SH;" matched
-            }
-        } else {
-            matched = (c == sync[0]) ? 1 : 0; // restart match if 'S' seen
-        }
-    }
-}
-
-static void bind_simhub_fields(simhub_data_t *data) {
-    int i = 0;
-    simhub_fields[i++].dest = data->curr_gear;
-    simhub_fields[i++].dest = data->curr_speed;
-    simhub_fields[i++].dest = data->rpm_percent;
-    simhub_fields[i++].dest = data->rpm_redline_threshold;
-    simhub_fields[i++].dest = data->current_time;
-    simhub_fields[i++].dest = data->last_time;
-    simhub_fields[i++].dest = data->best_time;
-    simhub_fields[i++].dest = data->delta_time;
-    simhub_fields[i++].dest = data->fl_wear;
-    simhub_fields[i++].dest = data->fr_wear;
-    simhub_fields[i++].dest = data->rl_wear;
-    simhub_fields[i++].dest = data->rr_wear;
-    simhub_fields[i++].dest = data->fl_tire_temp;
-    simhub_fields[i++].dest = data->fr_tire_temp;
-    simhub_fields[i++].dest = data->rl_tire_temp;
-    simhub_fields[i++].dest = data->rr_tire_temp;
-    simhub_fields[i++].dest = data->tc_level;
-    simhub_fields[i++].dest = data->tc_active;
-    simhub_fields[i++].dest = data->abs_level;
-    simhub_fields[i++].dest = data->abs_active;
-    simhub_fields[i++].dest = data->bb_level;
-    simhub_fields[i++].dest = data->engine_map;
-    simhub_fields[i++].dest = data->lap_invalid;
-    simhub_fields[i++].dest = data->fuel;
-    simhub_fields[i++].dest = data->fl_tyre_pressure;
-    simhub_fields[i++].dest = data->fr_tyre_pressure;
-    simhub_fields[i++].dest = data->rl_tyre_pressure;
-    simhub_fields[i++].dest = data->rr_tyre_pressure;
-    simhub_fields[i++].dest = data->fl_brake_temp;
-    simhub_fields[i++].dest = data->fr_brake_temp;
-    simhub_fields[i++].dest = data->rl_brake_temp;
-    simhub_fields[i++].dest = data->rr_brake_temp;
-    simhub_fields[i++].dest = data->engine_ignition;
-    simhub_fields[i++].dest = data->headlights;
-    simhub_fields[i++].dest = data->wipers;
-    simhub_fields[i++].dest = data->session_name;
-    simhub_fields[i++].dest = data->session_time_left;
-    simhub_fields[i++].dest = data->position;
-    simhub_fields[i++].dest = data->opponent_count;
-    simhub_fields[i++].dest = data->throttle;
-    simhub_fields[i++].dest = data->brake;
-    simhub_fields[i++].dest = data->curr_lap;
-}
-
-static bool parse_simhub_packet(simhub_data_t *out_data) {
-    bind_simhub_fields(out_data);
-
-    char field_buf[64];
-    size_t field_len = 0;
-    int field_idx = 0;
-    int total_fields = sizeof(simhub_fields) / sizeof(simhub_fields[0]);
-
-    while (field_idx < total_fields) {
-        char c;
-        int len = usb_serial_jtag_read_bytes(&c, 1, 20 / portTICK_PERIOD_MS);
-        if (len <= 0) return false;
-
-        if (c == ';') {
-            field_buf[field_len] = '\0';
-            strncpy(simhub_fields[field_idx].dest, field_buf,
-                    simhub_fields[field_idx].max_size - 1);
-            simhub_fields[field_idx].dest[simhub_fields[field_idx].max_size - 1] = '\0';
-
-            field_idx++;
-            field_len = 0;
-        } else {
-            if (field_len < sizeof(field_buf) - 1) {
-                field_buf[field_len++] = c;
-            }
-        }
-    }
-
-    return true;
-}
-
-static void simhub_task(void *arg) {
-    while (1) {
-        simhub_data_t simhub_data = {0};
-
-        // Step 1: Wait until sync marker appears
-        if (!wait_for_sync()) {
-            vTaskDelay(10 / portTICK_PERIOD_MS);
-            continue;
-        }
-
-        // Step 2: Parse fields after sync
-        if (parse_simhub_packet(&simhub_data)) {
-            xQueueSend(xQueue, &simhub_data, 10 / portTICK_PERIOD_MS);
-        }
     }
 }
 
@@ -550,8 +337,8 @@ void app_main(void)
 {
     // Configure USB SERIAL JTAG
     usb_serial_jtag_driver_config_t usb_serial_jtag_config = {
-        .rx_buffer_size = BUF_SIZE,
-        .tx_buffer_size = BUF_SIZE,
+        .rx_buffer_size = USB_JTAG_UART_BUFF_SIZE,
+        .tx_buffer_size = USB_JTAG_UART_BUFF_SIZE,
     };
 
     ESP_ERROR_CHECK(usb_serial_jtag_driver_install(&usb_serial_jtag_config));
@@ -638,4 +425,9 @@ void app_main(void)
 
     ESP_LOGI(TAG, "Create UI Update task");
     xTaskCreatePinnedToCore(ui_update_task, "UI_Update", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, 3, NULL, 1);
+}
+
+QueueHandle_t* Get_simhub_data_queue(void)
+{
+    return &xQueue;
 }
