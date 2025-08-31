@@ -54,7 +54,7 @@ void app_main(void)
     ESP_LOGI(TAG, "Initialize LVGL library");
     lv_init();
     // create a lvgl display
-    lv_display_t *display = lv_display_create(EXAMPLE_LCD_H_RES, EXAMPLE_LCD_V_RES);
+    lv_display_t *display = lv_display_create(LCD_H_RES, LCD_V_RES);
 
     // Initialize the touchpad input device
     /* Register a touchpad input device */
@@ -66,7 +66,7 @@ void app_main(void)
     // associate the rgb panel handle to the display
     lv_display_set_user_data(display, panel_handle);
     // set color depth
-    lv_display_set_color_format(display, EXAMPLE_LV_COLOR_FORMAT);
+    lv_display_set_color_format(display, LV_COLOR_FORMAT);
     // create draw buffers
     void *buf1 = NULL;
     void *buf2 = NULL;
@@ -74,11 +74,11 @@ void app_main(void)
     ESP_LOGI(TAG, "Use frame buffers as LVGL draw buffers");
     ESP_ERROR_CHECK(esp_lcd_rgb_panel_get_frame_buffer(panel_handle, 2, &buf1, &buf2));
     // set LVGL draw buffers and direct mode
-    lv_display_set_buffers(display, buf1, buf2, EXAMPLE_LCD_H_RES * EXAMPLE_LCD_V_RES * EXAMPLE_PIXEL_SIZE, LV_DISPLAY_RENDER_MODE_DIRECT);
+    lv_display_set_buffers(display, buf1, buf2, LCD_H_RES * LCD_V_RES * PIXEL_SIZE, LV_DISPLAY_RENDER_MODE_DIRECT);
 #else
     ESP_LOGI(TAG, "Allocate LVGL draw buffers");
     // it's recommended to allocate the draw buffer from internal memory, for better performance
-    size_t draw_buffer_sz = EXAMPLE_LCD_H_RES * LVGL_DRAW_BUF_LINES * EXAMPLE_PIXEL_SIZE;
+    size_t draw_buffer_sz = LCD_H_RES * LVGL_DRAW_BUF_LINES * PIXEL_SIZE;
     buf1 = heap_caps_malloc(draw_buffer_sz, MALLOC_CAP_DMA| MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     assert(buf1);
     buf2 = heap_caps_malloc(draw_buffer_sz, MALLOC_CAP_DMA| MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
