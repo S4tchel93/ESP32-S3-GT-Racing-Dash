@@ -1,4 +1,10 @@
+/***************************************************************************************************************************
+ * INCLUDE SECTION
+ ***************************************************************************************************************************/
+ /*project includes*/
 #include "lvgl_port.h"
+
+/*System/ESP IDF Includes*/
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_touch.h"
 #include "esp_log.h"
@@ -6,8 +12,36 @@
 #include <sys/param.h>
 #include <unistd.h>
 
+/***************************************************************************************************************************
+ * PRIVATE DEFINITIONS
+ ***************************************************************************************************************************/
+
+/***************************************************************************************************************************
+ * PRIVATE DATA & TYPES
+ ***************************************************************************************************************************/
+
 static const char *TAG = "LVGL_Port";
 
+/***************************************************************************************************************************
+ * PRIVATE FUNCTION DECLARATIONS
+ ***************************************************************************************************************************/
+
+/***************************************************************************************************************************
+ * PRIVATE FUNCTION DEFINITIONS
+ ***************************************************************************************************************************/
+
+/***************************************************************************************************************************
+ * PUBLIC FUNCTION DEFINITIONS
+ ***************************************************************************************************************************/
+
+/**
+ * @brief Callback that Notifies on_color_trans_done to LVGL
+ * 
+ * @param panel LCD Panel handle (ST7262)
+ * @param event_data LCD Panel handle event data
+ * @param user_ctx LVGL Display
+ * @return false 
+ */
 bool lvgl_port_notify_lvgl_flush_ready(esp_lcd_panel_handle_t panel, const esp_lcd_rgb_panel_event_data_t *event_data, void *user_ctx)
 {
     lv_display_t *disp = (lv_display_t *)user_ctx;
@@ -15,6 +49,13 @@ bool lvgl_port_notify_lvgl_flush_ready(esp_lcd_panel_handle_t panel, const esp_l
     return false;
 }
 
+/**
+ * @brief Callback that copies the rendered image to an area of the display
+ * 
+ * @param disp LVGL Display
+ * @param area LVGL Display Area
+ * @param px_map Pixel Map
+ */
 void lvgl_port_lvgl_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t *px_map)
 {
     esp_lcd_panel_handle_t panel_handle = lv_display_get_user_data(disp);
@@ -26,12 +67,25 @@ void lvgl_port_lvgl_flush_cb(lv_display_t *disp, const lv_area_t *area, uint8_t 
     esp_lcd_panel_draw_bitmap(panel_handle, offsetx1, offsety1, offsetx2 + 1, offsety2 + 1, px_map);
 }
 
+/**
+ * @brief Increases LVGL Tick so it knows how many ms have
+ * elapsed
+ * 
+ * @param arg Arguments passed through main, none for now
+ */
 void lvgl_port_increase_lvgl_tick(void *arg)
 {
     /* Tell LVGL how many milliseconds has elapsed */
-    lv_tick_inc(EXAMPLE_LVGL_TICK_PERIOD_MS);
+    lv_tick_inc(LVGL_TICK_PERIOD_MS);
 }
 
+/**
+ * @brief Callback that gets called to read the touchpad and get
+ * the coordinates of the touch event
+ * 
+ * @param indev_drv LVGL Input (touch) device
+ * @param data LVGL Input device data
+ */
 void lvgl_port_touchpad_read(lv_indev_t *indev_drv, lv_indev_data_t *data)
 {
     esp_lcd_touch_handle_t tp = (esp_lcd_touch_handle_t)lv_indev_get_driver_data(indev_drv);
@@ -56,6 +110,12 @@ void lvgl_port_touchpad_read(lv_indev_t *indev_drv, lv_indev_data_t *data)
     }
 }
 
+/**
+ * @brief Task required for LVGL to keep handling LVGL timers
+ * 
+ * @param arg Passed from Main, currently lvgl_api_lock to block
+ * accesses to LVGL data from multiple tasks
+ */
 void lvgl_port_task(void *arg)
 {
     _lock_t* lvgl_api_lock = (_lock_t*)arg;
@@ -67,9 +127,9 @@ void lvgl_port_task(void *arg)
         time_till_next_ms = lv_timer_handler();
         _lock_release(lvgl_api_lock);
         // in case of task watch dog timeout
-        time_till_next_ms = MAX(time_till_next_ms, EXAMPLE_LVGL_TASK_MIN_DELAY_MS);
+        time_till_next_ms = MAX(time_till_next_ms, LVGL_TASK_MIN_DELAY_MS);
         // in case of lvgl display not ready yet
-        time_till_next_ms = MIN(time_till_next_ms, EXAMPLE_LVGL_TASK_MAX_DELAY_MS);
+        time_till_next_ms = MIN(time_till_next_ms, LVGL_TASK_MAX_DELAY_MS);
         usleep(1000 * time_till_next_ms);
     }
 }

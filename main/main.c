@@ -23,9 +23,6 @@
 #include "gt911_touch.h"
 #include "lvgl_port.h"
 #include "driver/usb_serial_jtag.h"
-#include "screens.h"
-#include "user_colors.h"
-#include "simhub_data.h"
 #include "simhub_task.h"
 #include "ui_update_task.h"
 
@@ -81,7 +78,7 @@ void app_main(void)
 #else
     ESP_LOGI(TAG, "Allocate LVGL draw buffers");
     // it's recommended to allocate the draw buffer from internal memory, for better performance
-    size_t draw_buffer_sz = EXAMPLE_LCD_H_RES * EXAMPLE_LVGL_DRAW_BUF_LINES * EXAMPLE_PIXEL_SIZE;
+    size_t draw_buffer_sz = EXAMPLE_LCD_H_RES * LVGL_DRAW_BUF_LINES * EXAMPLE_PIXEL_SIZE;
     buf1 = heap_caps_malloc(draw_buffer_sz, MALLOC_CAP_DMA| MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
     assert(buf1);
     buf2 = heap_caps_malloc(draw_buffer_sz, MALLOC_CAP_DMA| MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
@@ -107,12 +104,12 @@ void app_main(void)
     };
     esp_timer_handle_t lvgl_tick_timer = NULL;
     ESP_ERROR_CHECK(esp_timer_create(&lvgl_tick_timer_args, &lvgl_tick_timer));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, EXAMPLE_LVGL_TICK_PERIOD_MS * 1000));
+    ESP_ERROR_CHECK(esp_timer_start_periodic(lvgl_tick_timer, LVGL_TICK_PERIOD_MS * 1000));
 
     ESP_LOGI(TAG, "Create Queue for simhub and UI update tasks");
 
     ESP_LOGI(TAG, "Create LVGL task");
-    xTaskCreatePinnedToCore(lvgl_port_task, "LVGL", EXAMPLE_LVGL_TASK_STACK_SIZE, &lvgl_api_lock, EXAMPLE_LVGL_TASK_PRIORITY, NULL, 0);
+    xTaskCreatePinnedToCore(lvgl_port_task, "LVGL", LVGL_TASK_STACK_SIZE, &lvgl_api_lock, LVGL_TASK_PRIORITY, NULL, 0);
 
     ESP_LOGI(TAG, "Display LVGL UI");
     // Lock the mutex due to the LVGL APIs are not thread-safe
@@ -122,8 +119,8 @@ void app_main(void)
     _lock_release(&lvgl_api_lock);
 
     ESP_LOGI(TAG, "Create SimHub task");
-    xTaskCreatePinnedToCore(simhub_task, "SimHub", EXAMPLE_LVGL_TASK_STACK_SIZE, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(simhub_task, "SimHub", LVGL_TASK_STACK_SIZE, NULL, 1, NULL, 1);
 
     ESP_LOGI(TAG, "Create UI Update task");
-    xTaskCreatePinnedToCore(ui_update_task, "UI_Update", EXAMPLE_LVGL_TASK_STACK_SIZE, &lvgl_api_lock, 3, NULL, 1);
+    xTaskCreatePinnedToCore(ui_update_task, "UI_Update", LVGL_TASK_STACK_SIZE, &lvgl_api_lock, 3, NULL, 1);
 }
