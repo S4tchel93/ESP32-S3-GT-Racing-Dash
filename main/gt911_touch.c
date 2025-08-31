@@ -1,15 +1,42 @@
+/***************************************************************************************************************************
+ * INCLUDE SECTION
+ ***************************************************************************************************************************/
+/*project includes*/
 #include "gt911_touch.h"
+#include "st7262_lcd.h"
+
+/*System/ESP IDF Includes*/
 #include "driver/i2c.h"
 #include "esp_log.h"
 #include "esp_err.h"
-#include "st7262_lcd.h"
 
+/***************************************************************************************************************************
+ * PRIVATE DEFINITIONS
+ ***************************************************************************************************************************/
+
+/***************************************************************************************************************************
+ * PRIVATE DATA & TYPES
+ ***************************************************************************************************************************/
 static const char *TAG = "GT911";
 
 static esp_lcd_touch_handle_t tp_handle = NULL; // Declare a handle for the touch panel
 
+/***************************************************************************************************************************
+ * PRIVATE FUNCTION DECLARATIONS
+ ***************************************************************************************************************************/
+
+static esp_err_t i2c_master_init(void);
+static void gpio_init(void);
+static void waveshare_esp32_s3_touch_reset();
+
+/***************************************************************************************************************************
+* PRIVATE FUNCTION DEFINITIONS
+***************************************************************************************************************************/
+
 /**
- * @brief I2C master initialization
+ * @brief Initializes I2C on the ESP as MASTER
+ * 
+ * @return esp_err_t 
  */
 static esp_err_t i2c_master_init(void)
 {
@@ -31,7 +58,10 @@ static esp_err_t i2c_master_init(void)
     return i2c_driver_install(i2c_master_port, i2c_conf.mode, 0, 0, 0);
 }
 
-// GPIO initialization
+/**
+ * @brief Initializes GPIOs used for the touch interface
+ * 
+ */
 static void gpio_init(void)
 {
     // Zero-initialize the config structure
@@ -46,7 +76,10 @@ static void gpio_init(void)
     gpio_config(&io_conf);
 }
 
-// Reset the touch screen
+/**
+ * @brief Resets the Touch Screen as recommended by the waveshare examples
+ * 
+ */
 static void waveshare_esp32_s3_touch_reset()
 {
     uint8_t write_buf = 0x01;
@@ -63,6 +96,15 @@ static void waveshare_esp32_s3_touch_reset()
     esp_rom_delay_us(200 * 1000);
 }
 
+/***************************************************************************************************************************
+ * PUBLIC FUNCTION DEFINITIONS
+ ***************************************************************************************************************************/
+
+/**
+ * @brief Initializes the GT911 capacitive touch panel
+ * 
+ * @return esp_lcd_touch_handle_t pointer that holds Touch Panel configuration
+ */
 esp_lcd_touch_handle_t* gt911_touch_init(void)
 {
     ESP_LOGI(TAG, "Initialize I2C bus");   // Log the initialization of the I2C bus
@@ -82,8 +124,8 @@ esp_lcd_touch_handle_t* gt911_touch_init(void)
     const esp_lcd_touch_config_t tp_cfg = {
         .x_max = EXAMPLE_LCD_H_RES,                // Set maximum X coordinate
         .y_max = EXAMPLE_LCD_V_RES,                // Set maximum Y coordinate
-        .rst_gpio_num = EXAMPLE_PIN_NUM_TOUCH_RST, // GPIO number for reset
-        .int_gpio_num = EXAMPLE_PIN_NUM_TOUCH_INT, // GPIO number for interrupt
+        .rst_gpio_num = PIN_NUM_TOUCH_RST, // GPIO number for reset
+        .int_gpio_num = PIN_NUM_TOUCH_INT, // GPIO number for interrupt
         .levels = {
             .reset = 0,     // Reset level
             .interrupt = 0, // Interrupt level
