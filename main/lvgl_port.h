@@ -12,8 +12,6 @@
  ***************************************************************************************************************************/
 #define LVGL_DRAW_BUF_LINES    50 // number of display lines in each draw buffer
 #define LVGL_TICK_PERIOD_MS    2
-#define LVGL_TASK_STACK_SIZE   (5 * 1024)
-#define LVGL_TASK_PRIORITY     2
 #define LVGL_TASK_MAX_DELAY_MS 500
 #define LVGL_TASK_MIN_DELAY_MS 1000 / CONFIG_FREERTOS_HZ
 
