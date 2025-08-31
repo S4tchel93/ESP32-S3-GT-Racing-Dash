@@ -2,7 +2,7 @@
 isnull([DataCorePlugin.GameData.NewData.Gear],'N')+ ';' +
 format([DataCorePlugin.GameData.NewData.SpeedKmh],'0') + ';' + 
 format([CarSettings_CurrentDisplayedRPMPercent],'0')+ ';' +
-format([CarSettings_RPMRedLineSetting],'0')+ ';' +
+format([CarSettings_RedLineDisplayedPercent],'0')+ ';' +
 left([CurrentLapTime],3,8) + ';'+ left([LastLapTime],3,8) + ';' +
 left([BestLapTime],3,8) + ';' +
 format([PersistantTrackerPlugin.SessionBestLiveDeltaSeconds],'0.000') + ';' +
@@ -34,9 +34,10 @@ if(([EngineIgnitionOn] | [EngineStarted]), '1', '0') + ';'+
 if(([ATSR_Hub.Telemetry_Headlight] | [ATSR_Hub.Telemetry_HeadlightFlash]), '1', '0') + ';' +
 [ATSR_Hub.Telemetry_Wiper] + ';' +
 [SessionTypeName] + ';' +
-[SessionTimeLeft] + ';' +
+left([SessionTimeLeft], 0, 8) + ';' +
 [Position] + ';' +
 [OpponentsCount] + ';' +
 [Throttle] + ';' +
-[Brake] + ';' +
+format([Brake], '0') + ';' +
 [CurrentLap] + ';'
+
