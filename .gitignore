@@ -13,6 +13,7 @@ managed_components/
 build_summary_*.xml
 app_info_*.txt
 size_info_*.txt
+CmakeCache.txt
 
 # pytest-embedded log folder
 pytest_embedded_log/
