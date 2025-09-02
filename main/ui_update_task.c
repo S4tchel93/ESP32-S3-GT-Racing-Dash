@@ -8,6 +8,7 @@
 #include "user_colors.h"
 #include "simhub_data.h"
 #include "simhub_task.h"
+#include "lvgl.h"
 
 /*System/ESP IDF Includes*/
 #include "freertos/FreeRTOS.h"
@@ -68,6 +69,17 @@
  */
 #define BLINK_INTERVAL_MS   100
 
+// Temperature color mapping constants
+#define COLD_TIRE_TEMP      (50)
+#define OPTIMUM_TIRE_TEMP   (85)
+#define HOT_TIRE_TEMP       (120)
+#define COLD_BRAKE_TEMP     (150)
+#define OPTIMUM_BRAKE_TEMP  (550)
+#define HOT_BRAKE_TEMP      (1000)
+
+// Minimum interval between temp updates for tire and brakes(ms)
+#define TEMP_UPDATE_INTERVAL_MS   (250)
+
 /***************************************************************************************************************************
  * PRIVATE DATA & TYPES
  ***************************************************************************************************************************/
@@ -92,6 +104,17 @@ typedef struct {
 } ui_label_update_t;
 
 /**
+ * @brief Struct that holds temperature mapping data for tires and brakes
+ * 
+ */
+typedef struct {
+    lv_obj_t *label;   // label with numeric value
+    lv_obj_t *target;  // object whose bg color changes
+    int cold, optimum, hot; // temperature thresholds
+    lv_color_t last_color; // last color set to avoid redundant updates
+} temp_map_t;
+
+/**
  * @brief holds rpm LED data for the current module
  * 
  */
@@ -109,6 +132,18 @@ static led_state_t abs_leds[NUM_ABS_LEDS];
  */
 static led_state_t tc_leds[NUM_TC_LEDS];
 
+/**
+ * @brief Holds tire temperature mapping data for the current module
+ * 
+ */
+static temp_map_t tire_maps[4];
+
+/**
+ * @brief Holds brake temperature mapping data for the current module
+ * 
+ */
+static temp_map_t brake_maps[4];
+
 /***************************************************************************************************************************
  * PRIVATE FUNCTION DECLARATIONS
  ***************************************************************************************************************************/
@@ -124,6 +159,19 @@ static void process_car_controls(const char* ignition, const char* wipers, const
 static void process_delta_color(const char* delta_time);
 static void process_throttle_brake_bars(const char* throttle, const char* brake);
 static void ui_apply_simhub_data(const simhub_data_t *data);
+static void init_abs_leds(void);
+static void init_tc_leds(void);
+static void init_rpm_leds(void);
+static void process_abs_leds(const char* abs_active);
+static void process_tc_leds(const char* tc_active);
+static void update_all_temps(void);
+static inline uint8_t linear_interpolation_u8(uint8_t a, uint8_t b, float t);
+static lv_color_t linear_interpolation_color(lv_color_t c1, lv_color_t c2, float t);
+static lv_color_t temp_to_color(int temp, int cold, int optimum, int hot);
+static void update_temp_from_label(temp_map_t *map);
+static void update_all_temps(void);
+static void init_temp_mappings(void);
+
 
  /***************************************************************************************************************************
  * PRIVATE FUNCTION DEFINITIONS
@@ -564,6 +612,127 @@ static void ui_apply_simhub_data(const simhub_data_t *data) {
     process_tc_leds(data->tc_active);
 }
 
+/**
+ * @brief Linear interpolation between two uint8_t values
+ * 
+ * @param a Input value 1
+ * @param b Input value 2
+ * @param s Slope between 0.0 and 1.0
+ * @return uint8_t Interpolated value
+ */
+static inline uint8_t linear_interpolation_u8(uint8_t a, uint8_t b, float s) {
+    if(s < 0.0f) s = 0.0f;
+    if(s > 1.0f) s = 1.0f;
+    return (uint8_t)(a + (b - a) * s);
+}
+
+/**
+ * @brief Linear interpolation between two lv_color_t colors
+ * 
+ * @param c1 Color 1
+ * @param c2 Color 2
+ * @param s  Slope
+ * @return lv_color_t Interpolated color
+ */
+static lv_color_t linear_interpolation_color(lv_color_t c1, lv_color_t c2, float s) {
+    uint32_t c1_u32 = lv_color_to_u32(c1);
+    uint32_t c2_u32 = lv_color_to_u32(c2);
+
+    uint8_t r1 = (c1_u32 >> 16) & 0xFF;
+    uint8_t g1 = (c1_u32 >> 8)  & 0xFF;
+    uint8_t b1 = (c1_u32 >> 0)  & 0xFF;
+
+    uint8_t r2 = (c2_u32 >> 16) & 0xFF;
+    uint8_t g2 = (c2_u32 >> 8)  & 0xFF;
+    uint8_t b2 = (c2_u32 >> 0)  & 0xFF;
+
+    return lv_color_make(
+        linear_interpolation_u8(r1, r2, s),
+        linear_interpolation_u8(g1, g2, s),
+        linear_interpolation_u8(b1, b2, s)
+    );
+}
+
+/**
+ * @brief Converts a temperature value to a color
+ * 
+ * @param temp temperature value in degrees celsius
+ * @param cold cold temperature threshold
+ * @param optimum optimum temperature threshold
+ * @param hot hot temperature threshold
+ * @return lv_color_t Output color
+ */
+static lv_color_t temp_to_color(int temp, int cold, int optimum, int hot)
+{
+    lv_color_t cold_c    = lv_color_make(0,   0, 255);   // Blue
+    lv_color_t optimum_c = lv_color_make(0, 255,   0);   // Green
+    lv_color_t hot_c     = lv_color_make(255, 0,   0);   // Red
+
+    if (temp <= cold) {
+        return cold_c;
+    } else if (temp < optimum) {
+        float slope = (float)(temp - cold) / (float)(optimum - cold);
+        return linear_interpolation_color(cold_c, optimum_c, slope);
+    } else if (temp < hot) {
+        float slope = (float)(temp - optimum) / (float)(hot - optimum);
+        return linear_interpolation_color(optimum_c, hot_c, slope);
+    } else {
+        return hot_c;
+    }
+}
+
+/**
+ * @brief Updates the background color of a target LVGL object
+ * based on the temperature value read from a label LVGL object
+ * 
+ * @param map temperature mapping structure pointer
+ */
+static void update_temp_from_label(temp_map_t *map)
+{
+    const char *txt = lv_label_get_text(map->label);
+    if(!txt) return;
+
+    int temp = atoi(txt);
+    lv_color_t new_col = temp_to_color(temp, map->cold, map->optimum, map->hot);
+
+    if(lv_color_to_u32(new_col) != lv_color_to_u32(map->last_color)) {
+        lv_obj_set_style_bg_color(map->target, new_col, LV_PART_MAIN);
+        map->last_color = new_col;
+    }
+}
+
+/**
+ * @brief Updates all tire and brake temperatures on screen
+ * 
+ */
+static void update_all_temps(void)
+{
+    for(int i=0;i<4;i++) {
+        update_temp_from_label(&tire_maps[i]);
+        update_temp_from_label(&brake_maps[i]);
+    }
+}
+
+/**
+ * @brief Initializes the tire and brake temperature mappings with
+ * the correct LVGL objects and temperature thresholds
+ * 
+ */
+static void init_temp_mappings(void)
+{
+    // Tires
+    tire_maps[0] = (temp_map_t){ objects.fl_tire_temp, objects.fl_tire, COLD_TIRE_TEMP, OPTIMUM_TIRE_TEMP, HOT_TIRE_TEMP, lv_color_black()};
+    tire_maps[1] = (temp_map_t){ objects.fr_tire_temp, objects.fr_tire, COLD_TIRE_TEMP, OPTIMUM_TIRE_TEMP, HOT_TIRE_TEMP, lv_color_black()};
+    tire_maps[2] = (temp_map_t){ objects.rl_tire_temp, objects.rl_tire, COLD_TIRE_TEMP, OPTIMUM_TIRE_TEMP, HOT_TIRE_TEMP, lv_color_black()};
+    tire_maps[3] = (temp_map_t){ objects.rr_tire_temp, objects.rr_tire, COLD_TIRE_TEMP, OPTIMUM_TIRE_TEMP, HOT_TIRE_TEMP, lv_color_black()};
+
+    // Brakes
+    brake_maps[0] = (temp_map_t){ objects.fl_brake_temp, objects.fl_brake, COLD_BRAKE_TEMP, OPTIMUM_BRAKE_TEMP, HOT_BRAKE_TEMP, lv_color_black()};
+    brake_maps[1] = (temp_map_t){ objects.fr_brake_temp, objects.fr_brake, COLD_BRAKE_TEMP, OPTIMUM_BRAKE_TEMP, HOT_BRAKE_TEMP, lv_color_black()};
+    brake_maps[2] = (temp_map_t){ objects.rl_brake_temp, objects.rl_brake, COLD_BRAKE_TEMP, OPTIMUM_BRAKE_TEMP, HOT_BRAKE_TEMP, lv_color_black()};
+    brake_maps[3] = (temp_map_t){ objects.rr_brake_temp, objects.rr_brake, COLD_BRAKE_TEMP, OPTIMUM_BRAKE_TEMP, HOT_BRAKE_TEMP, lv_color_black()};
+}
+
  /***************************************************************************************************************************
  * PUBLIC FUNCTION DEFINITIONS
  ***************************************************************************************************************************/
@@ -590,11 +759,26 @@ void ui_update_task(void *arg) {
     init_rpm_leds();
     init_abs_leds();
     init_tc_leds();
+    init_temp_mappings();
+
+    // For temperature update rate limiting
+    TickType_t last_temp_update = 0;
+    const TickType_t temp_update_interval_ticks =
+        pdMS_TO_TICKS(TEMP_UPDATE_INTERVAL_MS);
 
     while (1) {
         if (xQueueReceive(xQueue, &simhub_data, portMAX_DELAY) == pdPASS) {
             _lock_acquire(lvgl_api_lock);
             ui_apply_simhub_data(&simhub_data);
+
+            // Rate limit temperature updates, limited to TEMP_UPDATE_INTERVAL_MS
+            // This prevents excessive CPU usage due to frequent updates which may cause FPS drops
+            TickType_t now = xTaskGetTickCount();
+            if ((now - last_temp_update) >= temp_update_interval_ticks) {
+                update_all_temps();
+                last_temp_update = now;
+            }
+
             _lock_release(lvgl_api_lock);
         }
         taskYIELD();
