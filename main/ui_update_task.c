@@ -27,6 +27,30 @@
 #define NUM_LEDS (9)
 
 /**
+ * @brief Number of ABS Leds on the screen
+ * 
+ */
+#define NUM_ABS_LEDS (4)
+
+/**
+ * @brief Number of TC Leds on the screen
+ * 
+ */
+#define NUM_TC_LEDS (4)
+
+/**
+ * @brief ABS LED step time in ms
+ * 
+ */
+#define ABS_STEP_MS  (1000)
+
+/**
+ * @brief TC LED step time in ms
+ * 
+ */
+#define TC_STEP_MS   (2000)
+
+/**
  * @brief Minimum segments allowed for RPM LED strip
  * Only used whenever we get 0 on redline threshold data from simhub.
  * Used to prevent division by 0
@@ -73,9 +97,17 @@ typedef struct {
  */
 static led_state_t rpm_leds[NUM_LEDS];
 
-// Keep state for blinking
-static bool blink_state = false;
-static int64_t last_blink_time = 0;
+/**
+ * @brief holds abs LED data for the current module
+ * 
+ */
+static led_state_t abs_leds[NUM_ABS_LEDS];
+
+/**
+ * @brief Holds tc LED data for the current module
+ * 
+ */
+static led_state_t tc_leds[NUM_TC_LEDS];
 
 /***************************************************************************************************************************
  * PRIVATE FUNCTION DECLARATIONS
@@ -160,6 +192,9 @@ static void set_led(uint8_t idx, uint32_t color, uint8_t brightness) {
 static void process_rpm_leds(const char* rpm, const char* redline_threshold) {
     uint16_t rpm_val = atoi(rpm);
     uint16_t redline = atoi(redline_threshold);
+    //Keeps state for blinking on redline
+    static bool blink_state = false;
+    static int64_t last_blink_time = 0;
 
     if (redline == 0) return;
 
@@ -211,6 +246,132 @@ static void process_rpm_leds(const char* rpm, const char* redline_threshold) {
             set_led(i, color, 0); // Off
         }
     }
+}
+
+/**
+ * @brief Initializes the ABS Led structure to point to the correct LVGL
+ * objects and sets default color and brightness
+ * 
+ */
+static void init_abs_leds(void) {
+    abs_leds[0].led = objects.abs_led_1;
+    abs_leds[1].led = objects.abs_led_2;
+    abs_leds[2].led = objects.abs_led_3;
+    abs_leds[3].led = objects.abs_led_4;
+
+    // Initialize the state so we don't need to be setting color when updating
+    for (int i = 0; i < NUM_ABS_LEDS; i++) {
+        abs_leds[i].color = PURPLE_COLOR; 
+        lv_led_set_color(abs_leds[i].led, lv_color_hex(abs_leds[i].color));
+        abs_leds[i].brightness = 0;    // no brightness
+    }
+}
+
+/**
+ * @brief Initializes the TC Led structure to point to the correct LVGL
+ * objects and sets default color and brightness
+ * 
+ */
+static void init_tc_leds(void) {
+    tc_leds[0].led = objects.tc_led_1;
+    tc_leds[1].led = objects.tc_led_2;
+    tc_leds[2].led = objects.tc_led_3;
+    tc_leds[3].led = objects.tc_led_4;
+
+    // Initialize the state so we don't need to be setting color when updating
+    for (int i = 0; i < NUM_TC_LEDS; i++) {
+        tc_leds[i].color = LIGHT_BLUE_COLOR;   
+        lv_led_set_color(tc_leds[i].led, lv_color_hex(tc_leds[i].color));
+        tc_leds[i].brightness = 0;    // no brightness
+    }
+}
+
+/**
+ * @brief Turns on ABS LEDs progressively when ABS is active depending
+ * on how long ABS has been active, determined by ABS_STEP_MS
+ * 
+ * @param abs_active ABS active string pointer from received simhub data
+ */
+static void process_abs_leds(const char* abs_active)
+{
+    static int prev_abs = 0;
+    static int64_t abs_start_time = 0;
+    static uint8_t last_brightness[NUM_ABS_LEDS] = {0};
+
+    int curr_abs = atoi(abs_active);
+    int64_t now = esp_timer_get_time() / 1000; // ms
+
+    if (curr_abs == 1) {
+        if (prev_abs == 0) {
+            // Just turned ON
+            abs_start_time = now;
+        }
+
+        int64_t elapsed = now - abs_start_time;
+        int leds_on = elapsed / ABS_STEP_MS + 1;
+        if (leds_on > NUM_ABS_LEDS) leds_on = NUM_ABS_LEDS;
+
+        for (int i = 0; i < NUM_ABS_LEDS; i++) {
+            uint8_t brightness = (i < leds_on) ? 255 : 0;
+            if (brightness != last_brightness[i]) {
+                lv_led_set_brightness(abs_leds[i].led, brightness);
+                last_brightness[i] = brightness;
+            }
+        }
+    } else {
+        for (int i = 0; i < NUM_ABS_LEDS; i++) {
+            if (last_brightness[i] != 0) {
+                lv_led_set_brightness(abs_leds[i].led, 0);
+                last_brightness[i] = 0;
+            }
+        }
+    }
+
+    prev_abs = curr_abs;
+}
+
+/**
+ * @brief Turns on tc LEDs progressively when tc is active depending
+ * on how long tc has been active, determined by tc_STEP_MS
+ * 
+ * @param tc_active TC active string pointer from received simhub data
+ */
+static void process_tc_leds(const char* tc_active)
+{
+    static int prev_tc = 0;
+    static int64_t tc_start_time = 0;
+    static uint8_t last_brightness[NUM_TC_LEDS] = {0};
+
+    int curr_tc = atoi(tc_active);
+    int64_t now = esp_timer_get_time() / 1000; // ms
+
+    if (curr_tc == 1) {
+        if (prev_tc == 0) {
+            // Just turned ON
+            tc_start_time = now;
+        }
+
+        int64_t elapsed = now - tc_start_time;
+        int leds_on = elapsed / TC_STEP_MS + 1;
+        if (leds_on > NUM_TC_LEDS) leds_on = NUM_TC_LEDS;
+
+        for (int i = 0; i < NUM_TC_LEDS; i++) {
+            uint8_t brightness = (i < leds_on) ? 255 : 0;
+            if (brightness != last_brightness[i]) {
+                lv_led_set_brightness(tc_leds[i].led, brightness);
+                last_brightness[i] = brightness;
+            }
+        }
+    } else {
+        for (int i = 0; i < NUM_TC_LEDS; i++) {
+            if (last_brightness[i] != 0) {
+                lv_led_set_brightness(tc_leds[i].led, 0);
+                last_brightness[i] = 0;
+            }
+        }
+    }
+
+    prev_tc = curr_tc;
 }
 
 /**
@@ -394,14 +555,13 @@ static void ui_apply_simhub_data(const simhub_data_t *data) {
         update_label_if_changed(updates[i].label, updates[i].value);
     }
 
-    // RPM LEDs (special case)
+
     process_rpm_leds(data->rpm_percent, data->rpm_redline_threshold);
-
     process_car_controls(data->engine_ignition, data->wipers, data->headlights);
-
     process_delta_color(data->delta_time);
-
     process_throttle_brake_bars(data->throttle, data->brake);
+    process_abs_leds(data->abs_active);
+    process_tc_leds(data->tc_active);
 }
 
  /***************************************************************************************************************************
@@ -428,6 +588,8 @@ void ui_update_task(void *arg) {
     xQueue = *xQueue_p;
 
     init_rpm_leds();
+    init_abs_leds();
+    init_tc_leds();
 
     while (1) {
         if (xQueueReceive(xQueue, &simhub_data, portMAX_DELAY) == pdPASS) {
