@@ -12,6 +12,7 @@
 /*System/ESP IDF Includes*/
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_timer.h"
 #include "string.h"
 #include <sys/lock.h>
 
@@ -30,7 +31,18 @@
  * Only used whenever we get 0 on redline threshold data from simhub.
  * Used to prevent division by 0
  */
-#define MIN_SEGMENTS (3.0)
+#define MIN_SEGMENTS (1.0)
+
+/**
+ * @brief LEDs start lighting at 75% of redline threshold
+ * 
+ */
+#define RPM_START_THRESHOLD 0.75f
+
+/**
+ * @brief Blink speed at redline (non-blocking)
+ */
+#define BLINK_INTERVAL_MS   100
 
 /***************************************************************************************************************************
  * PRIVATE DATA & TYPES
@@ -60,6 +72,10 @@ typedef struct {
  * 
  */
 static led_state_t rpm_leds[NUM_LEDS];
+
+// Keep state for blinking
+static bool blink_state = false;
+static int64_t last_blink_time = 0;
 
 /***************************************************************************************************************************
  * PRIVATE FUNCTION DECLARATIONS
@@ -145,42 +161,54 @@ static void process_rpm_leds(const char* rpm, const char* redline_threshold) {
     uint16_t rpm_val = atoi(rpm);
     uint16_t redline = atoi(redline_threshold);
 
-    if (rpm_val > redline) {
-        // Over redline → flash all blue
+    if (redline == 0) return;
+
+    uint16_t start_rpm = (uint16_t)(RPM_START_THRESHOLD * redline);
+
+    // Case 1: Below threshold → all off
+    if (rpm_val < start_rpm) {
         for (int i = 0; i < NUM_LEDS; i++) {
-            set_led(i, BLUE_COLOR, 255);
+            set_led(i, get_led_color(i), 0);
         }
         return;
     }
 
-    // Size of each segment
-    float segment_size = (float)redline / NUM_LEDS;
+    // Case 2: At or above redline → blinking all blue
+    if (rpm_val >= redline) {
+        int64_t now = esp_timer_get_time() / 1000; // ms
+        if (now - last_blink_time >= BLINK_INTERVAL_MS) {
+            blink_state = !blink_state;
+            last_blink_time = now;
+        }
 
-    if(segment_size < 1.0 )
-    {
-        segment_size = MIN_SEGMENTS;
+        for (int i = 0; i < NUM_LEDS; i++) {
+            set_led(i, BLUE_COLOR, blink_state ? 255 : 0);
+        }
+        return;
     }
 
-    // Figure out which segment we're in
-    int active_idx = (int)(rpm_val / segment_size);
+    // Case 3: Between threshold and redline → progressive lighting
+    float active_range = (float)(redline - start_rpm);
+    float rel_rpm = (float)(rpm_val - start_rpm);
 
+    float segment_size = active_range / NUM_LEDS;
+    if (segment_size < 1.0f) segment_size = MIN_SEGMENTS;
+
+    int active_idx = (int)(rel_rpm / segment_size);
     if (active_idx >= NUM_LEDS) active_idx = NUM_LEDS - 1;
 
     for (int i = 0; i < NUM_LEDS; i++) {
         uint32_t color = get_led_color(i);
 
         if (i < active_idx) {
-            // Fully lit
-            set_led(i, color, 255);
+            set_led(i, color, 255); // Fully lit
         } else if (i == active_idx) {
-            // Partial brightness within segment
             float seg_start = i * segment_size;
             float seg_end   = (i + 1) * segment_size;
-            uint8_t b = (uint8_t)map(rpm_val, seg_start, seg_end, 0, 255);
-            set_led(i, color, b);
+            uint8_t b = (uint8_t)map(rel_rpm, seg_start, seg_end, 0, 255);
+            set_led(i, color, b); // Partial brightness
         } else {
-            // Off
-            set_led(i, color, 0);
+            set_led(i, color, 0); // Off
         }
     }
 }
