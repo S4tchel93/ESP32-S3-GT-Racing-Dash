@@ -1,4 +1,11 @@
 /***************************************************************************************************************************
+ * USER DEFINITIONS
+ ***************************************************************************************************************************/
+// IMPORTANT, adjust these settings according to your needs and RAM availability
+
+#define USE_TOUCH_PANEL // Comment/delete this line to disable touch panel functionality if your hardware doesn't have one
+
+/***************************************************************************************************************************
  * INCLUDE SECTION
  ***************************************************************************************************************************/
 /*System/ESP IDF Includes*/
@@ -12,7 +19,9 @@
 #include "esp_timer.h"
 #include "esp_lcd_panel_ops.h"
 #include "esp_lcd_panel_rgb.h"
+#ifdef USE_TOUCH_PANEL
 #include "esp_lcd_touch_gt911.h"
+#endif
 #include "esp_err.h"
 #include "esp_log.h"
 #include "lvgl.h"
@@ -21,7 +30,9 @@
 /*project includes*/
 #include "ui.h"
 #include "st7262_lcd.h"
+#ifdef USE_TOUCH_PANEL
 #include "gt911_touch.h"
+#endif
 #include "lvgl_port.h"
 #include "simhub_task.h"
 #include "ui_update_task.h"
@@ -49,11 +60,20 @@ static _lock_t lvgl_api_lock;
 /***************************************************************************************************************************
  * PRIVATE FUNCTION DECLARATIONS
  ***************************************************************************************************************************/
-
+#ifndef USE_TOUCH_PANEL
+static void dummy_touch_read(lv_indev_t * indev, lv_indev_data_t * data);
+#endif
 /***************************************************************************************************************************
  * PRIVATE FUNCTION DEFINITIONS
  ***************************************************************************************************************************/
-
+#ifndef USE_TOUCH_PANEL
+static void dummy_touch_read(lv_indev_t * indev, lv_indev_data_t * data)
+{
+    data->point.x = 0;
+    data->point.y = 0;
+    data->state = LV_INDEV_STATE_RELEASED;
+}
+#endif
 /***************************************************************************************************************************
  * PUBLIC FUNCTION DEFINITIONS
  ***************************************************************************************************************************/
@@ -72,22 +92,32 @@ void app_main(void)
     ESP_LOGI(TAG, "Install RGB LCD panel driver");
     esp_lcd_panel_handle_t* panel_handle_p = st7262_lcd_init();
     esp_lcd_panel_handle_t panel_handle = *panel_handle_p;
-    
+ 
+#ifdef USE_TOUCH_PANEL      
     ESP_LOGI(TAG, "Install TOUCH panel driver");
     esp_lcd_touch_handle_t* tp_handle_p = gt911_touch_init();
     esp_lcd_touch_handle_t tp_handle = *tp_handle_p;
-    
+#endif
+
     ESP_LOGI(TAG, "Initialize LVGL library");
     lv_init();
 
     // create a lvgl display
     lv_display_t *display = lv_display_create(LCD_H_RES, LCD_V_RES);
 
+#ifdef USE_TOUCH_PANEL    
     // Initialize the touchpad input device
     lv_indev_t *indev = lv_indev_create(); 
     lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER); // Set the input device type
     lv_indev_set_read_cb(indev, lvgl_port_touchpad_read); // Set the read callback function
     lv_indev_set_driver_data(indev, tp_handle); // Set driver data to the touch panel handle
+#endif
+#ifndef USE_TOUCH_PANEL
+    // Create a dummy input device so LVGL maintains normal timing behavior
+    lv_indev_t *dummy_indev = lv_indev_create();
+    lv_indev_set_type(dummy_indev, LV_INDEV_TYPE_POINTER);
+    lv_indev_set_read_cb(dummy_indev, dummy_touch_read);
+#endif
 
     // associate the rgb panel handle to the display
     lv_display_set_user_data(display, panel_handle);
