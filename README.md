@@ -36,6 +36,8 @@ Lastly, the UI is heavily inspired in Lovely Dashboard. No assets were stolen fr
 
 ### Build and Flash
 
+*IMPORTANT*: Before building, if you don't have a GT911 touch panel or wish to not use touch functionality, disable it by commenting #define USE_TOUCH_PANEL in main.c before continuing to prevent the screen crashing at boot.
+
 Run `idf.py -p PORT build flash monitor` to build, flash and monitor the project. A scatter chart will show up on the LCD as expected.
 
 The first time you run `idf.py` for the example will cost extra time as the build system needs to address the component dependencies and downloads the missing components from the ESP Component Registry into `managed_components` folder.
